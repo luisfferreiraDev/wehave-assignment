@@ -64,7 +64,10 @@
 				<tr class="border-b border-medium-gray">
 					<th class="p-3 text-left font-semibold text-dark-gray">Sponsor</th>
 					<th class="p-3 text-right font-semibold text-dark-gray">
-						<div class="min-w-48">Season Total</div>
+						<div class="min-w-48">
+							<div>Season Total</div>
+							<div class="text-xs font-normal text-gray-500">Capacity Usage</div>
+						</div>
 					</th>
 					{#each upcomingMatches as match (match.id)}
 						<th class="p-3 text-right font-semibold text-dark-gray">

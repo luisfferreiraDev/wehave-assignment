@@ -394,14 +394,24 @@ export const ticketAllocations = generateTicketAllocations();
  * Returns an array of sections, each containing sponsors and their ticket summaries.
  *
  * @param season - Optional season filter (e.g., "2025/26")
+ * @param sectionTypes - Optional section type filters (e.g., ["vip", "business"])
  * @returns Array of section overviews with sponsor summaries
  */
-export function getSectionTicketOverview(season?: string): SectionTicketOverview[] {
+export function getSectionTicketOverview(
+	season?: string,
+	sectionTypes?: string[] | null
+): SectionTicketOverview[] {
 	// Filter matchdays by season if provided
 	const seasonMatchdays = season ? matchdays.filter((m) => m.season === season) : matchdays;
 	const seasonMatchdayIds = new Set(seasonMatchdays.map((m) => m.id));
 
-	return stadiumSections.map((section) => {
+	// Filter sections by types if provided
+	const filteredSections =
+		sectionTypes && sectionTypes.length > 0
+			? stadiumSections.filter((s) => sectionTypes.includes(s.type))
+			: stadiumSections;
+
+	return filteredSections.map((section) => {
 		// Get all allocations for this section and season
 		const sectionAllocations = ticketAllocations.filter(
 			(a) => a.sectionId === section.id && seasonMatchdayIds.has(a.matchdayId)
@@ -536,6 +546,13 @@ export interface SeasonOption {
 	value: string | null; // URL-friendly format: "2025-26" or null for current
 }
 
+export interface SectionTypeOption {
+	label: string; // Display format: "VIP", "Business", etc.
+	value: string | null; // Section type or null for all
+}
+
+export type SectionType = 'vip' | 'business' | 'standard' | 'premium';
+
 /**
  * Get the current season label based on the current date
  * Assumes football seasons run from August to May
@@ -591,6 +608,20 @@ export function getAllSeasons(): SeasonOption[] {
 		// Current season has null value (no search param needed)
 		value: label === currentSeasonLabel ? null : seasonLabelToValue(label)
 	}));
+}
+
+/**
+ * Get all section type options
+ *
+ * @returns Array of section type option objects with label and value
+ */
+export function getAllSectionTypes(): SectionTypeOption[] {
+	return [
+		{ label: 'VIP', value: 'vip' },
+		{ label: 'Business', value: 'business' },
+		{ label: 'Premium', value: 'premium' },
+		{ label: 'Standard', value: 'standard' }
+	];
 }
 
 /**
