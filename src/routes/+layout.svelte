@@ -13,45 +13,51 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
 <div class="flex min-h-screen">
-	<div
-		class="box-content flex w-11 flex-col items-center justify-between gap-4 border-r border-medium-gray bg-light-gray py-1.5"
-	>
-		<div class="flex w-full flex-col items-center gap-4">
-			<a
-				href={resolve(paths.home.home())}
-				aria-label="Home"
-				class="flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary text-white transition-colors hover:bg-primary/80"
-			>
-				<Icon name="building" />
-			</a>
+	<div class="fixed z-50 box-content flex h-dvh w-11 border-r border-medium-gray bg-light-gray">
+		<div class="flex h-full w-full flex-col items-center justify-between py-1.5">
+			<div class="flex w-full flex-col items-center gap-4">
+				<a
+					href={resolve(paths.home.home())}
+					aria-label="Home"
+					class="flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary text-white transition-colors hover:bg-primary/80"
+				>
+					<Icon name="building" />
+				</a>
 
-			<div class="flex flex-col gap-8">
-				{#each menuItems as group (group.id)}
-					<div class="flex flex-col gap-1">
-						{#each group.items as item (item.id)}
-							{@const isActive = page.url.pathname === item.path}
-							<svelte:element
-								this={item.disabled ? 'div' : 'a'}
-								class="flex h-8 w-8 items-center justify-center rounded-[10px] {item.disabled
-									? 'cursor-not-allowed text-dark-gray'
-									: ` ${isActive ? 'bg-medium-gray/30 text-black' : 'text-dark-gray'}`} transition-colors hover:bg-medium-gray/50"
-								href={item.disabled ? undefined : resolve(item.path)}
-								aria-label={item.label}
-								aria-disabled={item.disabled ? 'true' : undefined}
-							>
-								<Icon name={item.icon} />
-							</svelte:element>
-						{/each}
-					</div>
-				{/each}
+				<div class="flex flex-col gap-8">
+					{#each menuItems as group (group.id)}
+						<div class="flex flex-col gap-1">
+							{#each group.items as item (item.id)}
+								{@const isActive = page.url.pathname === item.path}
+								<svelte:element
+									this={item.disabled ? 'div' : 'a'}
+									class="flex h-8 w-8 items-center justify-center rounded-[10px] {item.disabled
+										? 'cursor-not-allowed text-dark-gray'
+										: ` ${isActive ? 'bg-medium-gray/30 text-black' : 'text-dark-gray'}`} transition-colors hover:bg-medium-gray/50"
+									href={item.disabled ? undefined : resolve(item.path)}
+									aria-label={item.label}
+									aria-disabled={item.disabled ? 'true' : undefined}
+								>
+									<Icon name={item.icon} />
+								</svelte:element>
+							{/each}
+						</div>
+					{/each}
+				</div>
 			</div>
-		</div>
 
-		<img
-			alt="Profile"
-			src="https://media.licdn.com/dms/image/v2/D4E03AQGjXBfy_1QLBg/profile-displayphoto-scale_400_400/B4EZwL4xDiH8Ak-/0/1769725958082?e=1775088000&v=beta&t=oyux83pC9HDD6aBzFRiKqdH4UCy-xTesjzwSiJiO4mA"
-			class="flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary text-white transition-colors hover:bg-primary/80"
-		/>
+			<button
+				class="flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-[10px]"
+			>
+				<img
+					alt="Profile"
+					src="https://media.licdn.com/dms/image/v2/D4E03AQGjXBfy_1QLBg/profile-displayphoto-scale_400_400/B4EZwL4xDiH8Ak-/0/1769725958082?e=1775088000&v=beta&t=oyux83pC9HDD6aBzFRiKqdH4UCy-xTesjzwSiJiO4mA"
+					class=" "
+				/>
+			</button>
+		</div>
 	</div>
-	{@render children()}
+	<div class="relative w-full pt-11 pr-2 pl-13">
+		{@render children()}
+	</div>
 </div>

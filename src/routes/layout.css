@@ -7,3 +7,11 @@
 	--color-medium-gray: #e6e6e8;
 	--color-dark-gray: #96969d;
 }
+
+html {
+	font-size: 16px;
+}
+
+body {
+	font-size: 0.875rem;
+}
