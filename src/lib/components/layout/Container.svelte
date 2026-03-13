@@ -7,16 +7,20 @@
 </script>
 
 <div
-	class="absolute top-0 right-0 left-11 box-content flex h-11 items-center border-b border-medium-gray bg-light-gray px-6 pb-11"
+	class="fixed top-0 right-0 left-11 z-30 box-content flex h-22 flex-col border-b border-medium-gray bg-light-gray"
 >
-	<a href={resolve(paths.home.home())} class="flex items-center gap-2 font-bold">
-		<ChevronLeftIcon class=" text-dark-gray" />
-		<p>Tickets</p>
-	</a>
-</div>
-<div class="relative z-20 rounded-lg border border-medium-gray bg-white">
-	<div class="flex h-11 w-full items-center border-b border-medium-gray px-8">
-		{@render header()}
+	<div class="relative h-full w-full">
+		<a href={resolve(paths.home.home())} class="flex items-center gap-2 font-bold">
+			<ChevronLeftIcon class=" text-dark-gray" />
+			<p>Tickets</p>
+		</a>
+		<div
+			class="absolute right-2 bottom-0 left-2 flex h-11 items-center rounded-t-lg border-x border-t border-medium-gray bg-white px-8"
+		>
+			{@render header()}
+		</div>
 	</div>
+</div>
+<div class="relative z-20 rounded-lg border border-medium-gray bg-white pt-11">
 	{@render children()}
 </div>
