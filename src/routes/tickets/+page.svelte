@@ -5,6 +5,7 @@
 	import ChevronDownIcon from '$lib/components/icons/ChevronDownIcon.svelte';
 	import XIcon from '$lib/components/icons/XIcon.svelte';
 	import TicketDetailDrawer from '$lib/components/TicketDetailDrawer.svelte';
+	import MatchdaySelector from '$lib/components/MatchdaySelector.svelte';
 	import type { PageData } from './$types';
 	import { queryParam, ssp } from 'sveltekit-search-params/sveltekit-search-params';
 	import SeasonDropdown from '$lib/components/SeasonDropdown.svelte';
@@ -61,6 +62,36 @@
 	});
 
 	const hasSelection = $derived($sectionTypeParam && $sectionTypeParam.length > 0);
+
+	const matchdayIdsParam = queryParam('matchdayIds', ssp.array(), {
+		pushHistory: false
+	});
+
+	const defaultMatchdayIds = $derived(data.upcomingMatches.slice(0, 5).map((m) => m.id));
+	const selectedMatchdayIds = $derived(
+		$matchdayIdsParam && $matchdayIdsParam.length > 0 ? $matchdayIdsParam : defaultMatchdayIds
+	);
+
+	const displayedMatchdays = $derived(
+		data.upcomingMatches.filter((m) => selectedMatchdayIds.includes(m.id))
+	);
+
+	function handleMatchdaySelectionChange(ids: string[]) {
+		if (ids.length === 0) {
+			return;
+		}
+		$matchdayIdsParam = ids;
+	}
+
+	$effect(() => {
+		if (
+			$matchdayIdsParam &&
+			$matchdayIdsParam.length === 5 &&
+			JSON.stringify($matchdayIdsParam) === JSON.stringify(defaultMatchdayIds)
+		) {
+			$matchdayIdsParam = null;
+		}
+	});
 
 	let drawerOpen = $state(false);
 	let selectedSection = $state<StadiumSection | null>(null);
@@ -158,12 +189,17 @@
 						</div>
 					{/snippet}
 				</Dropdown>
+				<MatchdaySelector
+					allMatchdays={data.upcomingMatches}
+					selectedIds={selectedMatchdayIds}
+					onSelectionChange={handleMatchdaySelectionChange}
+				/>
 			</div>
 		</div>
 		{#each data.sectionOverviews as sectionOverview (sectionOverview.section.id)}
 			<SectionAccordion
 				{sectionOverview}
-				upcomingMatches={data.upcomingMatches}
+				upcomingMatches={displayedMatchdays}
 				onTicketClick={handleTicketClick}
 			/>
 		{/each}

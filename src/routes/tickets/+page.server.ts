@@ -37,7 +37,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		sectionTypeValues.length > 0 ? sectionTypeValues : null,
 		searchValue
 	);
-	const upcomingMatches = getUpcomingMatchdays(5, seasonLabel);
+	const upcomingMatches = getUpcomingMatchdays(20, seasonLabel);
 
 	return {
 		seasons,
