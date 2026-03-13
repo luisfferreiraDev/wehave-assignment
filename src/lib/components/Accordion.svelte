@@ -30,14 +30,12 @@
 <section class="w-full overflow-hidden {containerClass}">
 	<button
 		type="button"
-		class="flex w-full cursor-pointer items-center justify-start gap-4 px-4 py-2 text-left {headerClass}"
+		class="flex w-full cursor-pointer items-center justify-start gap-2 px-4 py-2 text-left {headerClass}"
 		onclick={toggle}
 		aria-expanded={open}
 	>
 		<ChevronDownIcon
-			class="h-5 w-5 shrink-0 text-gray-500 transition-transform duration-300 {open
-				? 'rotate-180'
-				: ''}"
+			class="h-4 w-4 shrink-0 transition-transform duration-300 {open ? 'rotate-180' : ''}"
 		/>
 		{#if header}
 			{@render header(open)}

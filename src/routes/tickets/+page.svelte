@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Container from '$lib/components/layout/Container.svelte';
 	import SectionAccordion from '$lib/components/SectionAccordion.svelte';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import { getSectionTicketOverview, getUpcomingMatchdays } from '$lib/data/mockTickets';
 	import type { PageData } from './$types';
 
@@ -26,17 +27,8 @@
 		</div>
 	{/snippet}
 	<div class="space-y-4 p-6">
-		<div class="flex items-center gap-2">
-			<label for="season-select" class="text-sm text-gray-600">Season:</label>
-			<select
-				id="season-select"
-				bind:value={selectedSeason}
-				class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm transition-colors hover:border-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
-			>
-				{#each data.seasons as season (season)}
-					<option value={season}>{season}</option>
-				{/each}
-			</select>
+		<div class="flex items-center justify-between">
+			<Dropdown bind:value={selectedSeason} options={data.seasons} />
 		</div>
 		{#each filteredSectionOverviews as sectionOverview (sectionOverview.section.id)}
 			<SectionAccordion {sectionOverview} upcomingMatches={filteredUpcomingMatches} />

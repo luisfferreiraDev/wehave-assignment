@@ -3,6 +3,7 @@
 	import type { Matchday } from '$lib/types/tickets';
 	import Accordion from '$lib/components/Accordion.svelte';
 	import AnimatedNumber from './AnimatedNumber.svelte';
+	import SectionTypeChip from './SectionTypeChip.svelte';
 
 	interface Props {
 		sectionOverview: SectionTicketOverview;
@@ -22,26 +23,6 @@
 			return () => clearTimeout(timer);
 		}
 	});
-
-	const getSectionTypeLabel = (type?: string) => {
-		const labels: Record<string, string> = {
-			vip: 'VIP',
-			business: 'Business',
-			standard: 'Standard',
-			premium: 'Premium'
-		};
-		return type ? labels[type] : 'Standard';
-	};
-
-	const getSectionTypeColor = (type?: string) => {
-		const colors: Record<string, string> = {
-			vip: 'bg-purple-100 text-purple-800 border-purple-200',
-			business: 'bg-blue-100 text-blue-800 border-blue-200',
-			standard: 'bg-gray-100 text-gray-800 border-gray-200',
-			premium: 'bg-amber-100 text-amber-800 border-amber-200'
-		};
-		return type ? colors[type] : colors.standard;
-	};
 
 	const formatDate = (date: Date) => {
 		return new Intl.DateTimeFormat('en-GB', {
@@ -67,16 +48,10 @@
 </script>
 
 <Accordion bind:open={isOpen}>
-	{#snippet header(_isOpen)}
+	{#snippet header()}
 		<div class="flex items-center gap-3">
 			<h3 class="font-semibold">{sectionOverview.section.name}</h3>
-			<span
-				class="rounded border px-2 py-1 text-xs font-medium {getSectionTypeColor(
-					sectionOverview.section.type
-				)}"
-			>
-				{getSectionTypeLabel(sectionOverview.section.type)}
-			</span>
+			<SectionTypeChip type={sectionOverview.section.type} size="sm" />
 			<span class=" text-gray-500">
 				{sectionOverview.sponsors.length} sponsor{sectionOverview.sponsors.length !== 1 ? 's' : ''}
 			</span>
