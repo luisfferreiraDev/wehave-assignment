@@ -8,10 +8,11 @@
 	interface Props {
 		sectionOverview: SectionTicketOverview;
 		upcomingMatches: Matchday[];
+		sortBy?: string | null;
 		onTicketClick?: (sectionId: string, sponsorId: string, matchdayId: string) => void;
 	}
 
-	let { sectionOverview, upcomingMatches, onTicketClick }: Props = $props();
+	let { sectionOverview, upcomingMatches, sortBy, onTicketClick }: Props = $props();
 
 	let isOpen = $state(true);
 	let shouldAnimate = $state(false);
@@ -46,6 +47,29 @@
 		if (maxPossibleTickets === 0) return 0;
 		return Math.round((sponsorSummary.totalSeasonTickets / maxPossibleTickets) * 100);
 	};
+
+	const sortedSponsors = $derived.by(() => {
+		const sponsors = [...sectionOverview.sponsors];
+
+		if (!sortBy) return sponsors;
+
+		switch (sortBy) {
+			case 'name-asc':
+				return sponsors.sort((a, b) => a.sponsor.name.localeCompare(b.sponsor.name));
+			case 'name-desc':
+				return sponsors.sort((a, b) => b.sponsor.name.localeCompare(a.sponsor.name));
+			case 'total-desc':
+				return sponsors.sort((a, b) => b.totalSeasonTickets - a.totalSeasonTickets);
+			case 'total-asc':
+				return sponsors.sort((a, b) => a.totalSeasonTickets - b.totalSeasonTickets);
+			case 'usage-desc':
+				return sponsors.sort((a, b) => calculateUsagePercentage(b) - calculateUsagePercentage(a));
+			case 'usage-asc':
+				return sponsors.sort((a, b) => calculateUsagePercentage(a) - calculateUsagePercentage(b));
+			default:
+				return sponsors;
+		}
+	});
 </script>
 
 <Accordion bind:open={isOpen}>
@@ -83,7 +107,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each sectionOverview.sponsors as sponsorSummary (sponsorSummary.sponsor.id)}
+				{#each sortedSponsors as sponsorSummary (sponsorSummary.sponsor.id)}
 					<tr class="border-b border-medium-gray transition-colors hover:bg-gray-50">
 						<td class="p-3 font-medium text-gray-900">
 							{sponsorSummary.sponsor.name}
@@ -106,24 +130,26 @@
 						</td>
 						{#each upcomingMatches as match (match.id)}
 							{@const ticketCount = getTicketCountForMatchday(sponsorSummary, match.id)}
-							<td class="p-3 text-right">
-								{#if ticketCount > 0}
-									<button
-										type="button"
-										onclick={() =>
-											onTicketClick?.(
-												sectionOverview.section.id,
-												sponsorSummary.sponsor.id,
-												match.id
-											)}
-										class="inline-flex min-w-8 cursor-pointer items-center justify-center rounded-md bg-white px-2 py-1 font-medium text-primary shadow-sm ring-1 ring-gray-200 transition-all hover:bg-primary hover:text-white hover:shadow-md hover:ring-primary"
-										title="View ticket details"
-									>
-										{ticketCount}
-									</button>
-								{:else}
-									<span class="text-gray-400">-</span>
-								{/if}
+							<td class="p-3">
+								<div class="flex items-center justify-end">
+									{#if ticketCount > 0}
+										<button
+											type="button"
+											onclick={() =>
+												onTicketClick?.(
+													sectionOverview.section.id,
+													sponsorSummary.sponsor.id,
+													match.id
+												)}
+											class="flex h-6 w-6 cursor-pointer items-center justify-center rounded bg-primary/10 text-primary ring ring-primary transition-colors hover:bg-primary/20"
+											title="View ticket details"
+										>
+											{ticketCount}
+										</button>
+									{:else}
+										<span class=" text-dark-gray">-</span>
+									{/if}
+								</div>
 							</td>
 						{/each}
 					</tr>

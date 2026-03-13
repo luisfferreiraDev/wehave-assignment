@@ -29,6 +29,9 @@
 		pushHistory: false,
 		debounceHistory: 300
 	});
+	const sortParam = queryParam('sort', ssp.string(), {
+		pushHistory: false
+	});
 
 	function clearSearch() {
 		$searchParam = null;
@@ -43,6 +46,11 @@
 	function clearSectionTypeFilter(event: MouseEvent) {
 		event.stopPropagation();
 		$sectionTypeParam = null;
+	}
+
+	function clearSort(event: MouseEvent) {
+		event.stopPropagation();
+		$sortParam = null;
 	}
 
 	const sectionTypeLabel = $derived(() => {
@@ -62,6 +70,15 @@
 	});
 
 	const hasSelection = $derived($sectionTypeParam && $sectionTypeParam.length > 0);
+
+	const sortOptions = [
+		{ value: 'name-asc', label: 'Name (A-Z)' },
+		{ value: 'name-desc', label: 'Name (Z-A)' },
+		{ value: 'total-desc', label: 'Total Tickets (High-Low)' },
+		{ value: 'total-asc', label: 'Total Tickets (Low-High)' },
+		{ value: 'usage-desc', label: 'Usage % (High-Low)' },
+		{ value: 'usage-asc', label: 'Usage % (Low-High)' }
+	];
 
 	const matchdayIdsParam = queryParam('matchdayIds', ssp.array(), {
 		pushHistory: false
@@ -194,12 +211,53 @@
 					selectedIds={selectedMatchdayIds}
 					onSelectionChange={handleMatchdaySelectionChange}
 				/>
+				<Dropdown>
+					{#snippet trigger({ isOpen })}
+						{$sortParam
+							? sortOptions.find((opt) => opt.value === $sortParam)?.label || 'Sort by'
+							: 'Sort by'}
+						{#if $sortParam}
+							<button
+								type="button"
+								onclick={clearSort}
+								class="cursor-pointer rounded-full bg-white p-0.5 text-primary"
+								aria-label="Clear sort"
+							>
+								<XIcon class="h-3 w-3" />
+							</button>
+						{:else}
+							<ChevronDownIcon
+								class="h-4 w-4 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}"
+							/>
+						{/if}
+					{/snippet}
+					{#snippet content({ close })}
+						<div class="flex flex-col gap-1 py-1">
+							{#each sortOptions as option (option.value)}
+								<button
+									type="button"
+									onclick={() => {
+										$sortParam = option.value;
+										close();
+									}}
+									class="flex w-full cursor-pointer items-center px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 {$sortParam ===
+									option.value
+										? 'bg-primary/10 font-medium text-primary'
+										: 'text-gray-700'}"
+								>
+									{option.label}
+								</button>
+							{/each}
+						</div>
+					{/snippet}
+				</Dropdown>
 			</div>
 		</div>
 		{#each data.sectionOverviews as sectionOverview (sectionOverview.section.id)}
 			<SectionAccordion
 				{sectionOverview}
 				upcomingMatches={displayedMatchdays}
+				sortBy={$sortParam}
 				onTicketClick={handleTicketClick}
 			/>
 		{/each}
