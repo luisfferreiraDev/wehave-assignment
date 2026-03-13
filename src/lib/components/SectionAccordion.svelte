@@ -87,15 +87,15 @@
 		<table class="w-full border-collapse overflow-hidden rounded-lg">
 			<thead>
 				<tr class="border-b border-medium-gray">
-					<th class="p-3 text-left  font-semibold text-gray-700">Sponsor</th>
-					<th class="p-3 text-right  font-semibold text-gray-700">
+					<th class="p-3 text-left font-semibold text-dark-gray">Sponsor</th>
+					<th class="p-3 text-right font-semibold text-dark-gray">
 						<div class="min-w-48">Season Total</div>
 					</th>
 					{#each upcomingMatches as match (match.id)}
-						<th class="p-3 text-right  font-semibold text-gray-700">
+						<th class="p-3 text-right font-semibold text-dark-gray">
 							<div class="flex flex-col items-end">
 								<span class="text-xs text-gray-500">{formatDate(match.date)}</span>
-								<span class="max-w-30 truncate" title={match.opponent}>
+								<span class="max-w-30 truncate text-xs" title={match.opponent}>
 									{match.opponent}
 								</span>
 							</div>
@@ -126,7 +126,7 @@
 							</div>
 						</td>
 						{#each upcomingMatches as match (match.id)}
-							<td class=" p-3 text-right text-gray-700">
+							<td class=" p-3 text-right text-dark-gray">
 								{getTicketCountForMatchday(sponsorSummary, match.id)}
 							</td>
 						{/each}

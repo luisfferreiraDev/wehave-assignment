@@ -72,12 +72,61 @@ export const stadiumSections: StadiumSection[] = [
 ];
 
 /**
- * Mock Matchdays for Season 2025/26
- * Starting from March 12, 2026 (current date per context)
- *
+ * Mock Matchdays for Seasons 2024/25, 2025/26, and 2026/27
  * Includes top European football teams for realism
  */
 export const matchdays: Matchday[] = [
+	// Season 2024/25 (Past season - completed)
+	{
+		id: 'md-20',
+		date: new Date('2025-01-15T20:00:00'),
+		opponent: 'AC Milan',
+		homeTeam: 'Home Club',
+		season: '2024/25',
+		competition: 'Serie A'
+	},
+	{
+		id: 'md-21',
+		date: new Date('2025-01-22T18:30:00'),
+		opponent: 'Borussia Dortmund',
+		homeTeam: 'Home Club',
+		season: '2024/25',
+		competition: 'Bundesliga'
+	},
+	{
+		id: 'md-22',
+		date: new Date('2025-02-05T15:00:00'),
+		opponent: 'Chelsea FC',
+		homeTeam: 'Home Club',
+		season: '2024/25',
+		competition: 'Premier League'
+	},
+	{
+		id: 'md-23',
+		date: new Date('2025-02-12T20:00:00'),
+		opponent: 'Atletico Madrid',
+		homeTeam: 'Home Club',
+		season: '2024/25',
+		competition: 'La Liga'
+	},
+	{
+		id: 'md-24',
+		date: new Date('2025-02-19T18:30:00'),
+		opponent: 'Inter Milan',
+		homeTeam: 'Home Club',
+		season: '2024/25',
+		competition: 'Serie A'
+	},
+	{
+		id: 'md-25',
+		date: new Date('2025-02-26T16:00:00'),
+		opponent: 'Arsenal FC',
+		homeTeam: 'Home Club',
+		season: '2024/25',
+		competition: 'Premier League'
+	},
+
+	// Season 2025/26 (Current season - ongoing)
 	{
 		id: 'md-28',
 		date: new Date('2026-03-15T15:00:00'),
@@ -133,6 +182,48 @@ export const matchdays: Matchday[] = [
 		homeTeam: 'Home Club',
 		season: '2025/26',
 		competition: 'Serie A'
+	},
+
+	// Season 2026/27 (Future season - scheduled)
+	{
+		id: 'md-35',
+		date: new Date('2026-08-15T15:00:00'),
+		opponent: 'Tottenham Hotspur',
+		homeTeam: 'Home Club',
+		season: '2026/27',
+		competition: 'Premier League'
+	},
+	{
+		id: 'md-36',
+		date: new Date('2026-08-22T18:30:00'),
+		opponent: 'Sevilla FC',
+		homeTeam: 'Home Club',
+		season: '2026/27',
+		competition: 'La Liga'
+	},
+	{
+		id: 'md-37',
+		date: new Date('2026-09-05T20:00:00'),
+		opponent: 'RB Leipzig',
+		homeTeam: 'Home Club',
+		season: '2026/27',
+		competition: 'Bundesliga'
+	},
+	{
+		id: 'md-38',
+		date: new Date('2026-09-12T15:00:00'),
+		opponent: 'Napoli',
+		homeTeam: 'Home Club',
+		season: '2026/27',
+		competition: 'Serie A'
+	},
+	{
+		id: 'md-39',
+		date: new Date('2026-09-19T18:30:00'),
+		opponent: 'Manchester United',
+		homeTeam: 'Home Club',
+		season: '2026/27',
+		competition: 'Premier League'
 	}
 ];
 
@@ -277,12 +368,19 @@ export const ticketAllocations = generateTicketAllocations();
  * This is the main data structure for the overview screen.
  * Returns an array of sections, each containing sponsors and their ticket summaries.
  *
+ * @param season - Optional season filter (e.g., "2025/26")
  * @returns Array of section overviews with sponsor summaries
  */
-export function getSectionTicketOverview(): SectionTicketOverview[] {
+export function getSectionTicketOverview(season?: string): SectionTicketOverview[] {
+	// Filter matchdays by season if provided
+	const seasonMatchdays = season ? matchdays.filter((m) => m.season === season) : matchdays;
+	const seasonMatchdayIds = new Set(seasonMatchdays.map((m) => m.id));
+
 	return stadiumSections.map((section) => {
-		// Get all allocations for this section
-		const sectionAllocations = ticketAllocations.filter((a) => a.sectionId === section.id);
+		// Get all allocations for this section and season
+		const sectionAllocations = ticketAllocations.filter(
+			(a) => a.sectionId === section.id && seasonMatchdayIds.has(a.matchdayId)
+		);
 
 		// Group allocations by sponsor
 		const sponsorMap = new Map<string, SponsorTicketSummary>();
@@ -366,14 +464,16 @@ export function getMatchdayDetailData(
  * Get all upcoming matchdays (next N matches)
  *
  * @param count - Number of matches to return (default: 5)
+ * @param season - Optional season filter (e.g., "2025/26")
  * @returns Array of upcoming matchdays
  */
-export function getUpcomingMatchdays(count: number = 5): Matchday[] {
+export function getUpcomingMatchdays(count: number = 5, season?: string): Matchday[] {
 	const now = new Date();
-	return matchdays
-		.filter((m) => m.date >= now)
-		.sort((a, b) => a.date.getTime() - b.date.getTime())
-		.slice(0, count);
+	const filtered = season
+		? matchdays.filter((m) => m.season === season)
+		: matchdays.filter((m) => m.date >= now);
+
+	return filtered.sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, count);
 }
 
 /**
@@ -404,6 +504,16 @@ export function getSectionById(sectionId: string): StadiumSection | undefined {
  */
 export function getMatchdayById(matchdayId: string): Matchday | undefined {
 	return matchdays.find((m) => m.id === matchdayId);
+}
+
+/**
+ * Get all unique seasons
+ *
+ * @returns Array of unique season strings
+ */
+export function getAllSeasons(): string[] {
+	const seasons = new Set(matchdays.map((m) => m.season));
+	return Array.from(seasons).sort().reverse(); // Most recent first
 }
 
 // =============================================================================

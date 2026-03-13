@@ -1,12 +1,10 @@
-import { getSectionTicketOverview, getUpcomingMatchdays } from '$lib/data/mockTickets';
+import { getAllSeasons } from '$lib/data/mockTickets';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	const sectionOverviews = getSectionTicketOverview();
-	const upcomingMatches = getUpcomingMatchdays(5);
+	const seasons = getAllSeasons();
 
 	return {
-		sectionOverviews,
-		upcomingMatches
+		seasons
 	};
 };
