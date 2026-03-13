@@ -232,6 +232,33 @@ export const matchdays: Matchday[] = [
 // =============================================================================
 
 /**
+ * Seeded random number generator for consistent data generation
+ * Uses a simple Linear Congruential Generator (LCG) algorithm
+ */
+class SeededRandom {
+	private seed: number;
+
+	constructor(seed: number) {
+		this.seed = seed;
+	}
+
+	/**
+	 * Generate a random number between 0 and 1
+	 */
+	random(): number {
+		this.seed = (this.seed * 9301 + 49297) % 233280;
+		return this.seed / 233280;
+	}
+
+	/**
+	 * Generate a random integer between min (inclusive) and max (inclusive)
+	 */
+	randomInt(min: number, max: number): number {
+		return Math.floor(this.random() * (max - min + 1)) + min;
+	}
+}
+
+/**
  * Generate realistic ticket allocations
  *
  * Logic:
@@ -239,11 +266,12 @@ export const matchdays: Matchday[] = [
  * - Ticket counts vary widely based on sponsor tier (premium, standard, minimal)
  * - Access levels match section type (VIP gets VIP access, etc.)
  * - Seat numbers are generated sequentially
- * - Gates are assigned randomly
+ * - Gates are assigned randomly (but deterministically with seed)
  */
 function generateTicketAllocations(): TicketAllocation[] {
 	const allocations: TicketAllocation[] = [];
 	const gates = ['A', 'B', 'C', 'D', 'E'];
+	const rng = new SeededRandom(12345); // Fixed seed for consistent results
 
 	// Define sponsor tiers for variety
 	type SponsorTier = 'premium' | 'standard' | 'minimal';
@@ -261,8 +289,8 @@ function generateTicketAllocations(): TicketAllocation[] {
 		// VIP sections: 2-3 sponsors, Others: 3-5 sponsors
 		const sponsorCount =
 			section.type === 'vip'
-				? Math.floor(Math.random() * 2) + 2 // 2-3
-				: Math.floor(Math.random() * 3) + 3; // 3-5
+				? rng.randomInt(2, 3) // 2-3
+				: rng.randomInt(3, 5); // 3-5
 
 		const sponsorsInSection = sponsors.slice(0, sponsorCount);
 
@@ -294,18 +322,15 @@ function generateTicketAllocations(): TicketAllocation[] {
 				switch (sponsorTier) {
 					case 'premium':
 						// Premium sponsors: 60-100% of max range
-						ticketCount =
-							Math.floor(Math.random() * (maxTickets * 0.4)) + Math.floor(maxTickets * 0.6);
+						ticketCount = rng.randomInt(Math.floor(maxTickets * 0.6), Math.floor(maxTickets * 1.0));
 						break;
 					case 'standard':
 						// Standard sponsors: 30-60% of max range
-						ticketCount =
-							Math.floor(Math.random() * (maxTickets * 0.3)) + Math.floor(maxTickets * 0.3);
+						ticketCount = rng.randomInt(Math.floor(maxTickets * 0.3), Math.floor(maxTickets * 0.6));
 						break;
 					case 'minimal':
 						// Minimal sponsors: 10-30% of max range
-						ticketCount =
-							Math.floor(Math.random() * (maxTickets * 0.2)) + Math.floor(maxTickets * 0.1);
+						ticketCount = rng.randomInt(Math.floor(maxTickets * 0.1), Math.floor(maxTickets * 0.3));
 						break;
 				}
 
@@ -314,7 +339,7 @@ function generateTicketAllocations(): TicketAllocation[] {
 				ticketCount = Math.max(ticketCount, minTickets);
 
 				// Generate seat numbers
-				const seatStart = Math.floor(Math.random() * (section.capacity - ticketCount));
+				const seatStart = rng.randomInt(0, section.capacity - ticketCount - 1);
 				const sectionPrefix = section.name.split(' ')[0][0]; // First letter of section name
 				const seatNumbers = Array.from(
 					{ length: ticketCount },
@@ -344,7 +369,7 @@ function generateTicketAllocations(): TicketAllocation[] {
 					ticketCount,
 					seatNumbers,
 					accessLevel,
-					gate: gates[Math.floor(Math.random() * gates.length)]
+					gate: gates[rng.randomInt(0, gates.length - 1)]
 				});
 			}
 		}
@@ -506,14 +531,76 @@ export function getMatchdayById(matchdayId: string): Matchday | undefined {
 	return matchdays.find((m) => m.id === matchdayId);
 }
 
+export interface SeasonOption {
+	label: string; // Display format: "2025/26"
+	value: string | null; // URL-friendly format: "2025-26" or null for current
+}
+
 /**
- * Get all unique seasons
+ * Get the current season label based on the current date
+ * Assumes football seasons run from August to May
  *
- * @returns Array of unique season strings
+ * @returns Current season label (e.g., "2025/26")
  */
-export function getAllSeasons(): string[] {
-	const seasons = new Set(matchdays.map((m) => m.season));
-	return Array.from(seasons).sort().reverse(); // Most recent first
+export function getCurrentSeasonLabel(): string {
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = now.getMonth() + 1; // JavaScript months are 0-indexed
+
+	// If we're in August (8) or later, the season is currentYear/nextYear
+	// Otherwise, it's previousYear/currentYear
+	return month >= 8
+		? `${year}/${String(year + 1).slice(-2)}`
+		: `${year - 1}/${String(year).slice(-2)}`;
+}
+
+/**
+ * Convert season label to value format
+ * @param label Season in "2025/26" format
+ * @returns Season in "2025-26" format
+ */
+export function seasonLabelToValue(label: string): string {
+	return label.replace('/', '-');
+}
+
+/**
+ * Convert season value to label format
+ * @param value Season in "2025-26" format or null for current season
+ * @returns Season in "2025/26" format
+ */
+export function seasonValueToLabel(value: string | null): string {
+	if (value === null) {
+		return getCurrentSeasonLabel();
+	}
+	return value.replace('-', '/');
+}
+
+/**
+ * Get all unique seasons as option objects
+ *
+ * @returns Array of season option objects with label and value
+ * The current season will have value: null (no search param)
+ */
+export function getAllSeasons(): SeasonOption[] {
+	const seasonLabels = new Set(matchdays.map((m) => m.season));
+	const sortedLabels = Array.from(seasonLabels).sort().reverse(); // Most recent first
+	const currentSeasonLabel = getCurrentSeasonLabel();
+
+	return sortedLabels.map((label) => ({
+		label,
+		// Current season has null value (no search param needed)
+		value: label === currentSeasonLabel ? null : seasonLabelToValue(label)
+	}));
+}
+
+/**
+ * Get the current season based on the current date
+ * Assumes football seasons run from August to May
+ *
+ * @returns Current season value (null, representing "Current Season")
+ */
+export function getCurrentSeason(): null {
+	return null;
 }
 
 // =============================================================================

@@ -1,23 +1,15 @@
 <script lang="ts">
 	import Container from '$lib/components/layout/Container.svelte';
 	import SectionAccordion from '$lib/components/SectionAccordion.svelte';
-	import Dropdown from '$lib/components/Dropdown.svelte';
-	import { getSectionTicketOverview, getUpcomingMatchdays } from '$lib/data/mockTickets';
+	import SeasonDropdown from '$lib/components/SeasonDropdown.svelte';
 	import type { PageData } from './$types';
+	import { queryParam, ssp } from 'sveltekit-search-params/sveltekit-search-params';
 
 	let { data }: { data: PageData } = $props();
 
-	let selectedSeason = $state('');
-
-	$effect(() => {
-		if (data.seasons.length > 0 && !selectedSeason) {
-			selectedSeason = data.seasons[0];
-		}
+	const seasonParam = queryParam('season', ssp.string(), {
+		pushHistory: false
 	});
-
-	// Filter data based on selected season
-	const filteredSectionOverviews = $derived(getSectionTicketOverview(selectedSeason));
-	const filteredUpcomingMatches = $derived(getUpcomingMatchdays(5, selectedSeason));
 </script>
 
 <Container>
@@ -28,13 +20,13 @@
 	{/snippet}
 	<div class="space-y-4 p-6">
 		<div class="flex items-center justify-between">
-			<Dropdown bind:value={selectedSeason} options={data.seasons} />
+			<SeasonDropdown bind:value={$seasonParam} options={data.seasons} />
 		</div>
-		{#each filteredSectionOverviews as sectionOverview (sectionOverview.section.id)}
-			<SectionAccordion {sectionOverview} upcomingMatches={filteredUpcomingMatches} />
+		{#each data.sectionOverviews as sectionOverview (sectionOverview.section.id)}
+			<SectionAccordion {sectionOverview} upcomingMatches={data.upcomingMatches} />
 		{/each}
 
-		{#if filteredSectionOverviews.length === 0}
+		{#if data.sectionOverviews.length === 0}
 			<p class="py-8 text-center text-gray-500">No stadium sections available.</p>
 		{/if}
 	</div>

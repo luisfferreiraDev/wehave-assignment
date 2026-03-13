@@ -1,10 +1,11 @@
 <script lang="ts">
 	import ChevronDownIcon from '$lib/components/icons/ChevronDownIcon.svelte';
 	import { slide } from 'svelte/transition';
+	import type { SeasonOption } from '$lib/data/mockTickets';
 
 	interface Props {
-		value: string;
-		options: string[];
+		value: string | null;
+		options: SeasonOption[];
 		placeholder?: string;
 		onChange?: (value: string) => void;
 		class?: string;
@@ -17,6 +18,8 @@
 		onChange,
 		class: className = ''
 	}: Props = $props();
+
+	const selectedLabel = $derived(options.find((opt) => opt.value === value)?.label || placeholder);
 
 	let isOpen = $state(false);
 	let dropdownEl: HTMLDivElement;
@@ -56,7 +59,7 @@
 		aria-expanded={isOpen}
 		aria-label="Dropdown menu"
 	>
-		<span class="text-xl font-semibold text-gray-900">{value || placeholder}</span>
+		<span class="text-xl font-semibold text-gray-900">{selectedLabel}</span>
 		<ChevronDownIcon
 			class="h-4 w-4 text-gray-500 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}"
 		/>
@@ -69,18 +72,18 @@
 			role="listbox"
 		>
 			<div class="max-h-60 overflow-auto py-1">
-				{#each options as option (option)}
+				{#each options as option (option.value)}
 					<button
 						type="button"
 						class="w-full cursor-pointer px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 {value ===
-						option
+						option.value
 							? 'bg-primary/10 font-medium text-primary'
 							: 'text-gray-700'}"
-						onclick={() => selectOption(option)}
+						onclick={() => selectOption(option.value)}
 						role="option"
-						aria-selected={value === option}
+						aria-selected={value === option.value}
 					>
-						{option}
+						{option.label}
 					</button>
 				{/each}
 			</div>
