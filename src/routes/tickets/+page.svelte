@@ -4,9 +4,17 @@
 	import Dropdown from '$lib/components/Dropdown.svelte';
 	import ChevronDownIcon from '$lib/components/icons/ChevronDownIcon.svelte';
 	import XIcon from '$lib/components/icons/XIcon.svelte';
+	import TicketDetailDrawer from '$lib/components/TicketDetailDrawer.svelte';
 	import type { PageData } from './$types';
 	import { queryParam, ssp } from 'sveltekit-search-params/sveltekit-search-params';
 	import SeasonDropdown from '$lib/components/SeasonDropdown.svelte';
+	import {
+		getSponsorById,
+		getSectionById,
+		getMatchdayById,
+		getTicketAllocation
+	} from '$lib/data/mockTickets';
+	import type { StadiumSection, Sponsor, Matchday, TicketAllocation } from '$lib/types/tickets';
 
 	let { data }: { data: PageData } = $props();
 
@@ -28,12 +36,6 @@
 	$effect(() => {
 		if (Array.isArray($sectionTypeParam) && $sectionTypeParam.length === 0) {
 			$sectionTypeParam = null;
-		}
-	});
-
-	$effect(() => {
-		if ($searchParam === '') {
-			$searchParam = null;
 		}
 	});
 
@@ -59,6 +61,37 @@
 	});
 
 	const hasSelection = $derived($sectionTypeParam && $sectionTypeParam.length > 0);
+
+	let drawerOpen = $state(false);
+	let selectedSection = $state<StadiumSection | null>(null);
+	let selectedSponsor = $state<Sponsor | null>(null);
+	let selectedMatchday = $state<Matchday | null>(null);
+	let selectedAllocation = $state<TicketAllocation | null>(null);
+	let seasonTotal = $state<number | undefined>(undefined);
+
+	function handleTicketClick(sectionId: string, sponsorId: string, matchdayId: string) {
+		const section = getSectionById(sectionId);
+		const sponsor = getSponsorById(sponsorId);
+		const matchday = getMatchdayById(matchdayId);
+		const allocation = getTicketAllocation(sectionId, sponsorId, matchdayId);
+
+		if (section && sponsor && matchday && allocation) {
+			selectedSection = section;
+			selectedSponsor = sponsor;
+			selectedMatchday = matchday;
+			selectedAllocation = allocation;
+
+			const sectionOverview = data.sectionOverviews.find((so) => so.section.id === sectionId);
+			const sponsorSummary = sectionOverview?.sponsors.find((s) => s.sponsor.id === sponsorId);
+			seasonTotal = sponsorSummary?.totalSeasonTickets;
+
+			drawerOpen = true;
+		}
+	}
+
+	function closeDrawer() {
+		drawerOpen = false;
+	}
 </script>
 
 <Container>
@@ -82,7 +115,7 @@
 						<button
 							type="button"
 							onclick={clearSearch}
-							class="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+							class="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-gray-400 transition-colors hover:text-gray-600"
 							aria-label="Clear search"
 						>
 							<XIcon class="h-4 w-4" />
@@ -128,7 +161,11 @@
 			</div>
 		</div>
 		{#each data.sectionOverviews as sectionOverview (sectionOverview.section.id)}
-			<SectionAccordion {sectionOverview} upcomingMatches={data.upcomingMatches} />
+			<SectionAccordion
+				{sectionOverview}
+				upcomingMatches={data.upcomingMatches}
+				onTicketClick={handleTicketClick}
+			/>
 		{/each}
 
 		{#if data.sectionOverviews.length === 0}
@@ -139,3 +176,13 @@
 		{/if}
 	</div>
 </Container>
+
+<TicketDetailDrawer
+	bind:open={drawerOpen}
+	onClose={closeDrawer}
+	section={selectedSection}
+	sponsor={selectedSponsor}
+	matchday={selectedMatchday}
+	allocation={selectedAllocation}
+	{seasonTotal}
+/>

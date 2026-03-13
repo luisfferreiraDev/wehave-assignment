@@ -513,7 +513,7 @@ export function getSectionTicketOverview(
 
 	// Apply search filter if provided
 	if (searchQuery && searchQuery.trim() !== '') {
-		return filterSectionOverviews(overviewResults, searchQuery, seasonMatchdays);
+		return filterSectionOverviews(overviewResults, searchQuery);
 	}
 
 	return overviewResults;
@@ -602,6 +602,24 @@ export function getSectionById(sectionId: string): StadiumSection | undefined {
  */
 export function getMatchdayById(matchdayId: string): Matchday | undefined {
 	return matchdays.find((m) => m.id === matchdayId);
+}
+
+/**
+ * Get a specific ticket allocation
+ *
+ * @param sectionId - ID of the section
+ * @param sponsorId - ID of the sponsor
+ * @param matchdayId - ID of the matchday
+ * @returns Ticket allocation or undefined
+ */
+export function getTicketAllocation(
+	sectionId: string,
+	sponsorId: string,
+	matchdayId: string
+): TicketAllocation | undefined {
+	return ticketAllocations.find(
+		(a) => a.sectionId === sectionId && a.sponsorId === sponsorId && a.matchdayId === matchdayId
+	);
 }
 
 export interface SeasonOption {

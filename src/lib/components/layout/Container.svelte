@@ -10,7 +10,7 @@
 	class="fixed top-0 right-0 left-11 z-30 box-content flex h-22 flex-col border-b border-medium-gray bg-light-gray"
 >
 	<div class="relative h-full w-full">
-		<a href={resolve(paths.home.home())} class="flex items-center gap-2 font-bold">
+		<a href={resolve(paths.home.home())} class="flex h-11 items-center gap-2 pl-6 font-bold">
 			<ChevronLeftIcon class=" text-dark-gray" />
 			<p>Tickets</p>
 		</a>

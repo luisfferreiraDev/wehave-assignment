@@ -8,9 +8,10 @@
 	interface Props {
 		sectionOverview: SectionTicketOverview;
 		upcomingMatches: Matchday[];
+		onTicketClick?: (sectionId: string, sponsorId: string, matchdayId: string) => void;
 	}
 
-	let { sectionOverview, upcomingMatches }: Props = $props();
+	let { sectionOverview, upcomingMatches, onTicketClick }: Props = $props();
 
 	let isOpen = $state(true);
 	let shouldAnimate = $state(false);
@@ -104,8 +105,25 @@
 							</div>
 						</td>
 						{#each upcomingMatches as match (match.id)}
-							<td class=" p-3 text-right text-dark-gray">
-								{getTicketCountForMatchday(sponsorSummary, match.id)}
+							{@const ticketCount = getTicketCountForMatchday(sponsorSummary, match.id)}
+							<td class="p-3 text-right">
+								{#if ticketCount > 0}
+									<button
+										type="button"
+										onclick={() =>
+											onTicketClick?.(
+												sectionOverview.section.id,
+												sponsorSummary.sponsor.id,
+												match.id
+											)}
+										class="inline-flex min-w-8 cursor-pointer items-center justify-center rounded-md bg-white px-2 py-1 font-medium text-primary shadow-sm ring-1 ring-gray-200 transition-all hover:bg-primary hover:text-white hover:shadow-md hover:ring-primary"
+										title="View ticket details"
+									>
+										{ticketCount}
+									</button>
+								{:else}
+									<span class="text-gray-400">-</span>
+								{/if}
 							</td>
 						{/each}
 					</tr>
