@@ -29,9 +29,13 @@ export const load: PageServerLoad = async ({ url }) => {
 		}
 	}
 
+	const searchQuery = url.searchParams.get('q');
+	const searchValue = searchQuery && searchQuery.trim() !== '' ? searchQuery : null;
+
 	const sectionOverviews = getSectionTicketOverview(
 		seasonLabel,
-		sectionTypeValues.length > 0 ? sectionTypeValues : null
+		sectionTypeValues.length > 0 ? sectionTypeValues : null,
+		searchValue
 	);
 	const upcomingMatches = getUpcomingMatchdays(5, seasonLabel);
 
@@ -41,6 +45,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		currentSeason,
 		seasonValue,
 		sectionTypeValues,
+		searchValue,
 		sectionOverviews,
 		upcomingMatches
 	};

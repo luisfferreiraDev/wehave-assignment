@@ -388,6 +388,60 @@ export const ticketAllocations = generateTicketAllocations();
 // =============================================================================
 
 /**
+ * Filter section overviews based on search query
+ *
+ * @param overviews - Array of section overviews to filter
+ * @param query - Search query string
+ * @returns Filtered array of section overviews
+ */
+export function filterSectionOverviews(
+	overviews: SectionTicketOverview[],
+	query: string
+): SectionTicketOverview[] {
+	if (!query || query.trim() === '') return overviews;
+
+	const searchLower = query.toLowerCase().trim();
+	const results: SectionTicketOverview[] = [];
+
+	for (const overview of overviews) {
+		const section = overview.section;
+
+		const sectionNameMatch = section.name.toLowerCase().includes(searchLower);
+		const sectionTypeMatch = section.type?.toLowerCase().includes(searchLower) || false;
+
+		if (sectionNameMatch || sectionTypeMatch) {
+			results.push(overview);
+			continue;
+		}
+
+		const matchingSponsors = overview.sponsors.filter((sponsorSummary) => {
+			if (sponsorSummary.sponsor.name.toLowerCase().includes(searchLower)) {
+				return true;
+			}
+
+			for (const allocation of sponsorSummary.matchdayAllocations) {
+				const matchday = allocation.matchday;
+
+				if (matchday.opponent.toLowerCase().includes(searchLower)) {
+					return true;
+				}
+			}
+
+			return false;
+		});
+
+		if (matchingSponsors.length > 0) {
+			results.push({
+				...overview,
+				sponsors: matchingSponsors
+			});
+		}
+	}
+
+	return results;
+}
+
+/**
  * Get ticket overview data grouped by stadium section
  *
  * This is the main data structure for the overview screen.
@@ -395,11 +449,13 @@ export const ticketAllocations = generateTicketAllocations();
  *
  * @param season - Optional season filter (e.g., "2025/26")
  * @param sectionTypes - Optional section type filters (e.g., ["vip", "business"])
+ * @param searchQuery - Optional search query to filter results
  * @returns Array of section overviews with sponsor summaries
  */
 export function getSectionTicketOverview(
 	season?: string,
-	sectionTypes?: string[] | null
+	sectionTypes?: string[] | null,
+	searchQuery?: string | null
 ): SectionTicketOverview[] {
 	// Filter matchdays by season if provided
 	const seasonMatchdays = season ? matchdays.filter((m) => m.season === season) : matchdays;
@@ -408,10 +464,10 @@ export function getSectionTicketOverview(
 	// Filter sections by types if provided
 	const filteredSections =
 		sectionTypes && sectionTypes.length > 0
-			? stadiumSections.filter((s) => sectionTypes.includes(s.type))
+			? stadiumSections.filter((s) => s.type && sectionTypes.includes(s.type))
 			: stadiumSections;
 
-	return filteredSections.map((section) => {
+	const overviewResults = filteredSections.map((section) => {
 		// Get all allocations for this section and season
 		const sectionAllocations = ticketAllocations.filter(
 			(a) => a.sectionId === section.id && seasonMatchdayIds.has(a.matchdayId)
@@ -454,6 +510,13 @@ export function getSectionTicketOverview(
 			isExpanded: false // Initially collapsed
 		};
 	});
+
+	// Apply search filter if provided
+	if (searchQuery && searchQuery.trim() !== '') {
+		return filterSectionOverviews(overviewResults, searchQuery, seasonMatchdays);
+	}
+
+	return overviewResults;
 }
 
 /**
