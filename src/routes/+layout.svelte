@@ -1,7 +1,6 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import paths from '$lib/paths';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Icon from '$lib/components/icons/Icon.svelte';
@@ -21,7 +20,14 @@
 	}
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head>
+	<title>WeHave - Stadium Ticket Dashboard</title>
+	<meta
+		name="description"
+		content="Track stadium section ticket allocations by sponsor, season, and matchday in a single dashboard."
+	/>
+	<link rel="icon" href={favicon} />
+</svelte:head>
 
 <div class="flex min-h-screen">
 	<div
@@ -46,7 +52,7 @@
 									class="flex h-8 w-8 items-center justify-center rounded-[10px] {item.disabled
 										? 'cursor-not-allowed text-dark-gray'
 										: ` ${isActive ? 'bg-medium-gray/30 text-black' : 'text-dark-gray'}`} transition-colors hover:bg-medium-gray/50"
-									href={item.disabled ? undefined : resolve(item.path as '/' | '/tickets')}
+									href={item.disabled ? undefined : resolve(item.path as '/')}
 									aria-label={item.label}
 									aria-disabled={item.disabled ? 'true' : undefined}
 								>
@@ -113,7 +119,7 @@
 							</div>
 						{:else}
 							<a
-								href={resolve(item.path as '/' | '/tickets')}
+								href={resolve(item.path as '/')}
 								onclick={closeMobileMenu}
 								class="flex items-center gap-3 rounded-[10px] px-3 py-2 text-dark-gray transition-colors {isActive
 									? 'bg-primary/10 text-primary'
