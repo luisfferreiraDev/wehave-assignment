@@ -39,7 +39,8 @@
 	<div
 		role="presentation"
 		class="fixed inset-0 z-60 bg-black/30"
-		transition:fade={{ duration: 200 }}
+		in:fade={{ duration: 200 }}
+		out:fade={{ duration: 300 }}
 		onclick={handleBackdropClick}
 	></div>
 
