@@ -6,6 +6,7 @@
 	import TicketDetailDrawer from '$lib/components/TicketDetailDrawer.svelte';
 	import FilterIcon from '$lib/components/icons/FilterIcon.svelte';
 	import Drawer from '$lib/components/Drawer.svelte';
+	import SearchClearButton from '$lib/components/SearchClearButton.svelte';
 	import { tick } from 'svelte';
 	import type { PageData } from './$types';
 	import { queryParam, ssp } from 'sveltekit-search-params/sveltekit-search-params';
@@ -20,6 +21,7 @@
 	import ArrowDownUp from '$lib/components/icons/ArrowDownUp.svelte';
 	import SearchIcon from '$lib/components/icons/SearchIcon.svelte';
 	import { slide } from 'svelte/transition';
+	import { SEARCH_PLACEHOLDER, SORT_OPTIONS } from '$lib/data/ticketsPageConstants';
 
 	let { data }: { data: PageData } = $props();
 
@@ -39,10 +41,10 @@
 
 	let isSearchOpen = $state(false);
 	let searchInputEl = $state<HTMLInputElement | null>(null);
-	let isSearchFocused = $state(false);
 
 	function clearSearch() {
 		$searchParam = null;
+		isSearchOpen = false;
 	}
 
 	async function openSearch() {
@@ -51,24 +53,12 @@
 		searchInputEl?.focus();
 	}
 
-	function closeSearch() {
-		isSearchOpen = false;
-	}
-
 	function handleSearchAction() {
-		if ($searchParam) {
-			clearSearch();
-			return;
-		}
-		closeSearch();
-	}
-
-	function handleSearchFocus() {
-		isSearchFocused = true;
+		clearSearch();
 	}
 
 	function handleSearchBlur() {
-		isSearchFocused = false;
+		isSearchOpen = false;
 	}
 
 	$effect(() => {
@@ -83,30 +73,19 @@
 		}
 	});
 
-	$effect(() => {
-		if (!isSearchFocused && (!$searchParam || $searchParam === '')) {
-			isSearchOpen = false;
-		}
-	});
-
 	function clearSort(event: MouseEvent | KeyboardEvent) {
 		event.stopPropagation();
 		$sortParam = null;
 	}
 
-	function clearAllFilters() {
+	function resetFilters() {
 		$sectionTypeParam = null;
 		$matchdayIdsParam = null;
 	}
 
-	const sortOptions = [
-		{ value: 'name-asc', label: 'Name (A-Z)' },
-		{ value: 'name-desc', label: 'Name (Z-A)' },
-		{ value: 'total-desc', label: 'Total Tickets (High-Low)' },
-		{ value: 'total-asc', label: 'Total Tickets (Low-High)' },
-		{ value: 'usage-desc', label: 'Usage % (High-Low)' },
-		{ value: 'usage-asc', label: 'Usage % (Low-High)' }
-	];
+	function clearAllFilters() {
+		resetFilters();
+	}
 
 	const matchdayIdsParam = queryParam('matchdayIds', ssp.array(), {
 		pushHistory: false
@@ -229,14 +208,7 @@
 			<div
 				class="relative flex items-center justify-center gap-4 bg-white px-3 py-2 md:justify-between"
 			>
-				<SeasonDropdown
-					bind:value={$seasonParam}
-					onChange={() => {
-						$sectionTypeParam = null;
-						$matchdayIdsParam = null;
-					}}
-					options={data.seasons}
-				/>
+				<SeasonDropdown bind:value={$seasonParam} onChange={resetFilters} options={data.seasons} />
 
 				<div class="flex w-full justify-end gap-2">
 					<div class="z-10 hidden md:block">
@@ -250,19 +222,11 @@
 									type="text"
 									bind:this={searchInputEl}
 									bind:value={$searchParam}
-									onfocus={handleSearchFocus}
 									onblur={handleSearchBlur}
-									placeholder="Search sponsors or sections"
+									placeholder={SEARCH_PLACEHOLDER}
 									class="h-10 w-full rounded-md border border-gray-300 px-3 py-1.5 pr-9 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
 								/>
-								<button
-									type="button"
-									onclick={handleSearchAction}
-									class="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-gray-400 transition-colors hover:text-gray-600"
-									aria-label={$searchParam ? 'Clear search' : 'Close search'}
-								>
-									<XIcon class="h-4 w-4" />
-								</button>
+								<SearchClearButton hasQuery={Boolean($searchParam)} onClick={handleSearchAction} />
 							{:else}
 								<button
 									type="button"
@@ -302,7 +266,7 @@
 						{#snippet trigger()}
 							{#if $sortParam}
 								{$sortParam
-									? sortOptions.find((opt) => opt.value === $sortParam)?.label || 'Sort'
+									? SORT_OPTIONS.find((opt) => opt.value === $sortParam)?.label || 'Sort'
 									: 'Sort'}
 								<span
 									onclick={clearSort}
@@ -326,7 +290,7 @@
 						{/snippet}
 						{#snippet content({ close })}
 							<div class="flex flex-col gap-1 py-1">
-								{#each sortOptions as option (option.value)}
+								{#each SORT_OPTIONS as option (option.value)}
 									<button
 										type="button"
 										onclick={() => {
@@ -356,18 +320,11 @@
 							type="text"
 							bind:this={mobileSearchInputEl}
 							bind:value={$searchParam}
-							placeholder="Search sponsors or sections"
+							placeholder={SEARCH_PLACEHOLDER}
 							class="h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 pr-9 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
 						/>
 						{#if $searchParam}
-							<button
-								type="button"
-								onclick={handleSearchAction}
-								class="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-gray-400 transition-colors hover:text-gray-600"
-								aria-label={$searchParam ? 'Clear search' : 'Close search'}
-							>
-								<XIcon class="h-4 w-4" />
-							</button>
+							<SearchClearButton hasQuery={Boolean($searchParam)} onClick={handleSearchAction} />
 						{/if}
 					</div>
 				</div>
