@@ -8,9 +8,10 @@
 		onClose: () => void;
 		title?: string;
 		children: Snippet;
+		class?: string;
 	}
 
-	let { open = $bindable(), onClose, title, children }: Props = $props();
+	let { open = $bindable(), onClose, title, children, class: className }: Props = $props();
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape' && open) {
@@ -63,7 +64,7 @@
 					<XIcon class="h-5 w-5" />
 				</button>
 			</div>
-			<div class="flex-1 overflow-y-auto p-6">
+			<div class="flex-1 overflow-y-auto p-6 {className}">
 				{@render children()}
 			</div>
 		</div>
