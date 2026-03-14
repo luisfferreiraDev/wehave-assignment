@@ -6,6 +6,8 @@
 	import XIcon from '$lib/components/icons/XIcon.svelte';
 	import TicketDetailDrawer from '$lib/components/TicketDetailDrawer.svelte';
 	import MatchdaySelector from '$lib/components/MatchdaySelector.svelte';
+	import FilterIcon from '$lib/components/icons/FilterIcon.svelte';
+	import Drawer from '$lib/components/Drawer.svelte';
 	import type { PageData } from './$types';
 	import { queryParam, ssp } from 'sveltekit-search-params/sveltekit-search-params';
 	import SeasonDropdown from '$lib/components/SeasonDropdown.svelte';
@@ -52,6 +54,11 @@
 	function clearSort(event: MouseEvent | KeyboardEvent) {
 		event.stopPropagation();
 		$sortParam = null;
+	}
+
+	function clearAllFilters() {
+		$sectionTypeParam = null;
+		$matchdayIdsParam = null;
 	}
 
 	const sectionTypeLabel = $derived(() => {
@@ -110,6 +117,23 @@
 			$matchdayIdsParam = null;
 		}
 	});
+
+	let filterDrawerOpen = $state(false);
+
+	const activeFilterCount = $derived.by(() => {
+		let count = 0;
+		if ($sectionTypeParam && $sectionTypeParam.length > 0) count++;
+		if ($matchdayIdsParam && $matchdayIdsParam.length > 0) count++;
+		return count;
+	});
+
+	function openFilterDrawer() {
+		filterDrawerOpen = true;
+	}
+
+	function closeFilterDrawer() {
+		filterDrawerOpen = false;
+	}
 
 	let drawerOpen = $state(false);
 	let selectedSection = $state<StadiumSection | null>(null);
@@ -171,54 +195,21 @@
 						</button>
 					{/if}
 				</div>
-				<Dropdown>
-					{#snippet trigger({ isOpen })}
-						{sectionTypeLabel()}
-						{#if hasSelection}
-							<span
-								onclick={clearSectionTypeFilter}
-								onkeydown={(e) => {
-									if (e.key === 'Enter' || e.key === ' ') {
-										e.preventDefault();
-										clearSectionTypeFilter(e);
-									}
-								}}
-								class="cursor-pointer rounded-full bg-white p-0.5 text-primary"
-								aria-label="Clear filter"
-								role="button"
-								tabindex="0"
-							>
-								<XIcon class="h-3 w-3" />
-							</span>
-						{:else}
-							<ChevronDownIcon
-								class="h-4 w-4 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}"
-							/>
-						{/if}
-					{/snippet}
-					{#snippet content()}
-						<div class="flex flex-col gap-1 px-2 py-1">
-							{#each data.sectionTypes as option (option.value)}
-								<label
-									class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-gray-100"
-								>
-									<input
-										type="checkbox"
-										bind:group={$sectionTypeParam}
-										value={option.value}
-										class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary/20"
-									/>
-									<span class="text-gray-700">{option.label}</span>
-								</label>
-							{/each}
-						</div>
-					{/snippet}
-				</Dropdown>
-				<MatchdaySelector
-					allMatchdays={data.upcomingMatches}
-					selectedIds={selectedMatchdayIds}
-					onSelectionChange={handleMatchdaySelectionChange}
-				/>
+				<button
+					type="button"
+					onclick={openFilterDrawer}
+					class="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+				>
+					<FilterIcon class="h-4 w-4" />
+					Filters
+					{#if activeFilterCount > 0}
+						<span
+							class="flex h-5 w-5 items-center justify-center rounded-full border border-primary bg-primary/10 text-xs text-primary"
+						>
+							{activeFilterCount}
+						</span>
+					{/if}
+				</button>
 				<Dropdown>
 					{#snippet trigger()}
 						{#if $sortParam}
@@ -296,3 +287,82 @@
 	allocation={selectedAllocation}
 	{seasonTotal}
 />
+
+<Drawer bind:open={filterDrawerOpen} title="Filters" onClose={closeFilterDrawer}>
+	<div class="flex h-full flex-col">
+		<div class="grow space-y-6">
+			<div>
+				<div class="mb-2 block text-sm font-medium text-gray-700">Section Type</div>
+				<Dropdown class="w-full">
+					{#snippet trigger({ isOpen })}
+						{sectionTypeLabel()}
+						{#if hasSelection}
+							<span
+								onclick={clearSectionTypeFilter}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault();
+										clearSectionTypeFilter(e);
+									}
+								}}
+								class="cursor-pointer rounded-full bg-white p-0.5 text-primary"
+								aria-label="Clear filter"
+								role="button"
+								tabindex="0"
+							>
+								<XIcon class="h-3 w-3" />
+							</span>
+						{:else}
+							<ChevronDownIcon
+								class="h-4 w-4 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}"
+							/>
+						{/if}
+					{/snippet}
+					{#snippet content()}
+						<div class="flex flex-col gap-1 px-2 py-1">
+							{#each data.sectionTypes as option (option.value)}
+								<label
+									class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-gray-100"
+								>
+									<input
+										type="checkbox"
+										bind:group={$sectionTypeParam}
+										value={option.value}
+										class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary/20"
+									/>
+									<span class="text-gray-700">{option.label}</span>
+								</label>
+							{/each}
+						</div>
+					{/snippet}
+				</Dropdown>
+			</div>
+
+			<div>
+				<div class="mb-2 block text-sm font-medium text-gray-700">Matchdays</div>
+				<MatchdaySelector
+					allMatchdays={data.upcomingMatches}
+					selectedIds={selectedMatchdayIds}
+					onSelectionChange={handleMatchdaySelectionChange}
+				/>
+			</div>
+		</div>
+
+		<div class="flex items-center justify-between border-t border-gray-200 pt-4">
+			<button
+				type="button"
+				onclick={clearAllFilters}
+				class="text-sm text-gray-600 underline transition-colors hover:text-gray-900"
+			>
+				Clear all
+			</button>
+			<button
+				type="button"
+				onclick={closeFilterDrawer}
+				class="rounded-md bg-primary px-4 py-2 text-white transition-colors hover:bg-primary/80"
+			>
+				Done
+			</button>
+		</div>
+	</div>
+</Drawer>
