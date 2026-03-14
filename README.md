@@ -2,6 +2,10 @@
 
 SvelteKit application for visualizing stadium section ticket allocations by sponsor and matchday.
 
+## Live Demo
+
+https://wehaveio-assignment.luisfferreira.dev/
+
 ## Stack
 
 - SvelteKit + Svelte 5 runes
