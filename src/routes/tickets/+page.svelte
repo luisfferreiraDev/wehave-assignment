@@ -16,6 +16,7 @@
 		getTicketAllocation
 	} from '$lib/data/mockTickets';
 	import type { StadiumSection, Sponsor, Matchday, TicketAllocation } from '$lib/types/tickets';
+	import ArrowDownUp from '$lib/components/icons/ArrowDownUp.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -43,12 +44,12 @@
 		}
 	});
 
-	function clearSectionTypeFilter(event: MouseEvent) {
+	function clearSectionTypeFilter(event: MouseEvent | KeyboardEvent) {
 		event.stopPropagation();
 		$sectionTypeParam = null;
 	}
 
-	function clearSort(event: MouseEvent) {
+	function clearSort(event: MouseEvent | KeyboardEvent) {
 		event.stopPropagation();
 		$sortParam = null;
 	}
@@ -174,14 +175,21 @@
 					{#snippet trigger({ isOpen })}
 						{sectionTypeLabel()}
 						{#if hasSelection}
-							<button
-								type="button"
+							<span
 								onclick={clearSectionTypeFilter}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault();
+										clearSectionTypeFilter(e);
+									}
+								}}
 								class="cursor-pointer rounded-full bg-white p-0.5 text-primary"
 								aria-label="Clear filter"
+								role="button"
+								tabindex="0"
 							>
 								<XIcon class="h-3 w-3" />
-							</button>
+							</span>
 						{:else}
 							<ChevronDownIcon
 								class="h-4 w-4 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}"
@@ -212,23 +220,31 @@
 					onSelectionChange={handleMatchdaySelectionChange}
 				/>
 				<Dropdown>
-					{#snippet trigger({ isOpen })}
-						{$sortParam
-							? sortOptions.find((opt) => opt.value === $sortParam)?.label || 'Sort by'
-							: 'Sort by'}
+					{#snippet trigger()}
 						{#if $sortParam}
-							<button
-								type="button"
+							{$sortParam
+								? sortOptions.find((opt) => opt.value === $sortParam)?.label || 'Sort by'
+								: 'Sort by'}
+							<span
 								onclick={clearSort}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault();
+										clearSort(e);
+									}
+								}}
 								class="cursor-pointer rounded-full bg-white p-0.5 text-primary"
 								aria-label="Clear sort"
+								role="button"
+								tabindex="0"
 							>
 								<XIcon class="h-3 w-3" />
-							</button>
+							</span>
 						{:else}
-							<ChevronDownIcon
-								class="h-4 w-4 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}"
-							/>
+							<ArrowDownUp class="h-4 w-4 transition-transform duration-200" />
+							{$sortParam
+								? sortOptions.find((opt) => opt.value === $sortParam)?.label || 'Sort by'
+								: 'Sort by'}
 						{/if}
 					{/snippet}
 					{#snippet content({ close })}

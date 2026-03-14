@@ -49,7 +49,7 @@
 	<button
 		type="button"
 		onclick={toggle}
-		class="flex cursor-pointer items-center justify-between gap-2 rounded-md bg-primary px-3 py-1.5 text-white transition-colors hover:bg-primary/80"
+		class="flex cursor-pointer items-center justify-between gap-2 rounded-md border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs"
 		aria-haspopup="listbox"
 		aria-expanded={isOpen}
 		aria-label="Dropdown menu"
