@@ -389,7 +389,7 @@
 
 <Drawer bind:open={filterDrawerOpen} title="Filters" onClose={closeFilterDrawer} scrollable={false}>
 	<div class="flex h-full min-h-0 flex-col">
-		<div class="min-h-0 grow space-y-6 overflow-y-auto pr-1">
+		<div class="min-h-0 grow space-y-6 overflow-y-auto pr-1 pb-4">
 			<div>
 				<div class="mb-2 block text-sm font-medium text-gray-700">Section Type</div>
 				<div class="space-y-2">
