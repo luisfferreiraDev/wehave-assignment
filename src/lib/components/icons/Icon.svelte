@@ -4,6 +4,9 @@
 	import UtensilsCrossedIcon from './UtensilsCrossedIcon.svelte';
 	import ChevronLeftIcon from './ChevronLeftIcon.svelte';
 	import ChevronDownIcon from './ChevronDownIcon.svelte';
+	import VanIcon from './VanIcon.svelte';
+	import HotelIcon from './HotelIcon.svelte';
+	import UsersIcon from './UsersIcon.svelte';
 
 	interface Props {
 		name: string;
@@ -20,7 +23,10 @@
 		ticket: TicketIcon,
 		'chevron-left': ChevronLeftIcon,
 		'chevron-down': ChevronDownIcon,
-		'utensils-crossed': UtensilsCrossedIcon
+		'utensils-crossed': UtensilsCrossedIcon,
+		van: VanIcon,
+		hotel: HotelIcon,
+		users: UsersIcon
 	};
 
 	const IconComponent = $derived(iconMap[name] || TicketIcon);

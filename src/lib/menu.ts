@@ -14,14 +14,7 @@ export const menuItems = [
 				id: 'sponsors',
 				label: 'Sponsors',
 				path: '/',
-				icon: 'ticket',
-				disabled: true
-			},
-			{
-				id: 'stadiums',
-				label: 'Stadiums',
-				path: '/',
-				icon: 'ticket',
+				icon: 'users',
 				disabled: true
 			}
 		]
@@ -40,14 +33,14 @@ export const menuItems = [
 				id: 'hotels',
 				label: 'Hotels',
 				path: '/',
-				icon: 'ticket',
+				icon: 'hotel',
 				disabled: true
 			},
 			{
 				id: 'transportation',
 				label: 'Transportation',
 				path: '/',
-				icon: 'ticket',
+				icon: 'van',
 				disabled: true
 			}
 		]

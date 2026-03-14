@@ -6,7 +6,7 @@ import {
 	getUpcomingMatchdays,
 	seasonValueToLabel
 } from '$lib/data/mockTickets';
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad } from './tickets/$types';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const seasons = getAllSeasons();

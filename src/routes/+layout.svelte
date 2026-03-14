@@ -29,13 +29,12 @@
 	>
 		<div class="flex h-full w-full flex-col items-center justify-between py-1.5">
 			<div class="flex w-full flex-col items-center gap-4">
-				<a
-					href={resolve(paths.home.home())}
+				<button
 					aria-label="Home"
 					class="flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary text-white transition-colors hover:bg-primary/80"
 				>
 					<Icon name="building" />
-				</a>
+				</button>
 
 				<div class="flex flex-col gap-8">
 					{#each menuItems as group (group.id)}
@@ -74,13 +73,12 @@
 	<div
 		class="fixed top-0 right-0 left-0 z-40 box-content flex h-11 items-center justify-between border-b border-medium-gray bg-light-gray px-3 md:hidden"
 	>
-		<a
-			href={resolve(paths.home.home())}
+		<button
 			aria-label="Home"
 			class="flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary text-white transition-colors hover:bg-primary/80"
 		>
 			<Icon name="building" />
-		</a>
+		</button>
 
 		<button
 			type="button"
