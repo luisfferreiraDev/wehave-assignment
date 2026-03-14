@@ -1,11 +1,11 @@
 @import 'tailwindcss';
 
 @theme {
-	--color-primary: #7e21ff;
-	--color-light-primary: #bdb7ed;
-	--color-light-gray: #fafafa;
-	--color-medium-gray: #e6e6e8;
-	--color-dark-gray: #96969d;
+	--color-primary: oklab(53.978% 0.10772 -0.26126);
+	--color-light-primary: oklab(80.286% 0.02556 -0.07158);
+	--color-light-gray: oklab(97.647% 0 0);
+	--color-medium-gray: oklab(90.196% 0 0);
+	--color-dark-gray: oklab(59.608% 0 0);
 }
 
 html {
@@ -14,4 +14,15 @@ html {
 
 body {
 	font-size: 0.875rem;
+}
+
+::selection {
+	background: oklab(53.874% 0.10621 -0.26186 / 0.1);
+	color: oklab(53.978% 0.10772 -0.26126);
+}
+
+/* Firefox support */
+::-moz-selection {
+	background: oklab(53.874% 0.10621 -0.26186 / 0.1);
+	color: oklab(53.978% 0.10772 -0.26126);
 }

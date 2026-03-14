@@ -25,11 +25,21 @@
 
 	$effect(() => {
 		if (open) {
+			const previousOverflow = document.body.style.overflow;
+			const previousPaddingRight = document.body.style.paddingRight;
+			const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
 			document.addEventListener('keydown', handleKeydown);
 			document.body.style.overflow = 'hidden';
+			if (scrollbarWidth > 0) {
+				const currentPaddingRight = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
+				document.body.style.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
+			}
+
 			return () => {
 				document.removeEventListener('keydown', handleKeydown);
-				document.body.style.overflow = '';
+				document.body.style.overflow = previousOverflow;
+				document.body.style.paddingRight = previousPaddingRight;
 			};
 		}
 	});
