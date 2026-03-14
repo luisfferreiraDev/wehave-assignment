@@ -2,10 +2,8 @@
 	import Container from '$lib/components/layout/Container.svelte';
 	import SectionAccordion from '$lib/components/SectionAccordion.svelte';
 	import Dropdown from '$lib/components/Dropdown.svelte';
-	import ChevronDownIcon from '$lib/components/icons/ChevronDownIcon.svelte';
 	import XIcon from '$lib/components/icons/XIcon.svelte';
 	import TicketDetailDrawer from '$lib/components/TicketDetailDrawer.svelte';
-	import MatchdaySelector from '$lib/components/MatchdaySelector.svelte';
 	import FilterIcon from '$lib/components/icons/FilterIcon.svelte';
 	import Drawer from '$lib/components/Drawer.svelte';
 	import type { PageData } from './$types';
@@ -46,11 +44,6 @@
 		}
 	});
 
-	function clearSectionTypeFilter(event: MouseEvent | KeyboardEvent) {
-		event.stopPropagation();
-		$sectionTypeParam = null;
-	}
-
 	function clearSort(event: MouseEvent | KeyboardEvent) {
 		event.stopPropagation();
 		$sortParam = null;
@@ -60,24 +53,6 @@
 		$sectionTypeParam = null;
 		$matchdayIdsParam = null;
 	}
-
-	const sectionTypeLabel = $derived(() => {
-		if (!$sectionTypeParam || $sectionTypeParam.length === 0) {
-			return 'Section type';
-		}
-		if ($sectionTypeParam.length === 1) {
-			return (
-				data.sectionTypes.find((opt) => opt.value === $sectionTypeParam?.[0])?.label ||
-				'Section type'
-			);
-		}
-		const firstLabel =
-			data.sectionTypes.find((opt) => opt.value === $sectionTypeParam?.[0])?.label || '';
-		const remainingCount = $sectionTypeParam.length - 1;
-		return `${firstLabel} (+${remainingCount})`;
-	});
-
-	const hasSelection = $derived($sectionTypeParam && $sectionTypeParam.length > 0);
 
 	const sortOptions = [
 		{ value: 'name-asc', label: 'Name (A-Z)' },
@@ -108,6 +83,23 @@
 		$matchdayIdsParam = ids;
 	}
 
+	function handleMatchdayCheckboxChange(matchdayId: string, checked: boolean) {
+		if (checked) {
+			handleMatchdaySelectionChange([...selectedMatchdayIds, matchdayId]);
+		} else {
+			if (selectedMatchdayIds.length > 1) {
+				handleMatchdaySelectionChange(selectedMatchdayIds.filter((id) => id !== matchdayId));
+			}
+		}
+	}
+
+	const formatDate = (date: Date) => {
+		return new Intl.DateTimeFormat('en-GB', {
+			day: '2-digit',
+			month: 'short'
+		}).format(date);
+	};
+
 	$effect(() => {
 		if (
 			$matchdayIdsParam &&
@@ -116,15 +108,6 @@
 		) {
 			$matchdayIdsParam = null;
 		}
-	});
-
-	let previousSeason = $state($seasonParam);
-	$effect(() => {
-		if (previousSeason !== undefined && previousSeason !== $seasonParam) {
-			$sectionTypeParam = null;
-			$matchdayIdsParam = null;
-		}
-		previousSeason = $seasonParam;
 	});
 
 	let filterDrawerOpen = $state(false);
@@ -183,9 +166,81 @@
 		</div>
 	{/snippet}
 	<div class="space-y-4 p-6">
-		<div class="flex items-center justify-between gap-4">
-			<SeasonDropdown bind:value={$seasonParam} options={data.seasons} />
-			<div class="flex w-full items-center justify-end gap-2">
+		<div class="flex flex-col items-center justify-between gap-4">
+			<SeasonDropdown
+				bind:value={$seasonParam}
+				onChange={() => {
+					$sectionTypeParam = null;
+					$matchdayIdsParam = null;
+				}}
+				options={data.seasons}
+			/>
+			<div class="flex w-full gap-2">
+				<div class="flex w-full items-center justify-end gap-2">
+					<button
+						type="button"
+						onclick={openFilterDrawer}
+						class="flex cursor-pointer items-center justify-between gap-2 rounded-md border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs"
+					>
+						<FilterIcon class="h-4 w-4" />
+						Filters
+						{#if activeFilterCount > 0}
+							<span
+								class="flex h-5 w-5 items-center justify-center rounded-full border border-primary bg-primary/10 text-xs text-primary"
+							>
+								{activeFilterCount}
+							</span>
+						{/if}
+					</button>
+					<Dropdown contentClass="min-w-50">
+						{#snippet trigger()}
+							{#if $sortParam}
+								{$sortParam
+									? sortOptions.find((opt) => opt.value === $sortParam)?.label || 'Sort'
+									: 'Sort'}
+								<span
+									onclick={clearSort}
+									onkeydown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											e.preventDefault();
+											clearSort(e);
+										}
+									}}
+									class="cursor-pointer rounded-full bg-white p-0.5 text-primary"
+									aria-label="Clear sort"
+									role="button"
+									tabindex="0"
+								>
+									<XIcon class="h-3 w-3" />
+								</span>
+							{:else}
+								<ArrowDownUp class="h-4 w-4 transition-transform duration-200" />
+								{$sortParam
+									? sortOptions.find((opt) => opt.value === $sortParam)?.label || 'Sort'
+									: 'Sort'}
+							{/if}
+						{/snippet}
+						{#snippet content({ close })}
+							<div class="flex flex-col gap-1 py-1">
+								{#each sortOptions as option (option.value)}
+									<button
+										type="button"
+										onclick={() => {
+											$sortParam = option.value;
+											close();
+										}}
+										class="flex w-full cursor-pointer items-center px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 {$sortParam ===
+										option.value
+											? 'bg-primary/10 font-medium text-primary'
+											: 'text-gray-700'}"
+									>
+										{option.label}
+									</button>
+								{/each}
+							</div>
+						{/snippet}
+					</Dropdown>
+				</div>
 				<div class="relative w-64 transition-all duration-200">
 					<input
 						type="text"
@@ -204,69 +259,6 @@
 						</button>
 					{/if}
 				</div>
-				<button
-					type="button"
-					onclick={openFilterDrawer}
-					class="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-				>
-					<FilterIcon class="h-4 w-4" />
-					Filters
-					{#if activeFilterCount > 0}
-						<span
-							class="flex h-5 w-5 items-center justify-center rounded-full border border-primary bg-primary/10 text-xs text-primary"
-						>
-							{activeFilterCount}
-						</span>
-					{/if}
-				</button>
-				<Dropdown>
-					{#snippet trigger()}
-						{#if $sortParam}
-							{$sortParam
-								? sortOptions.find((opt) => opt.value === $sortParam)?.label || 'Sort by'
-								: 'Sort by'}
-							<span
-								onclick={clearSort}
-								onkeydown={(e) => {
-									if (e.key === 'Enter' || e.key === ' ') {
-										e.preventDefault();
-										clearSort(e);
-									}
-								}}
-								class="cursor-pointer rounded-full bg-white p-0.5 text-primary"
-								aria-label="Clear sort"
-								role="button"
-								tabindex="0"
-							>
-								<XIcon class="h-3 w-3" />
-							</span>
-						{:else}
-							<ArrowDownUp class="h-4 w-4 transition-transform duration-200" />
-							{$sortParam
-								? sortOptions.find((opt) => opt.value === $sortParam)?.label || 'Sort by'
-								: 'Sort by'}
-						{/if}
-					{/snippet}
-					{#snippet content({ close })}
-						<div class="flex flex-col gap-1 py-1">
-							{#each sortOptions as option (option.value)}
-								<button
-									type="button"
-									onclick={() => {
-										$sortParam = option.value;
-										close();
-									}}
-									class="flex w-full cursor-pointer items-center px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 {$sortParam ===
-									option.value
-										? 'bg-primary/10 font-medium text-primary'
-										: 'text-gray-700'}"
-								>
-									{option.label}
-								</button>
-							{/each}
-						</div>
-					{/snippet}
-				</Dropdown>
 			</div>
 		</div>
 		{#each data.sectionOverviews as sectionOverview (sectionOverview.section.id)}
@@ -302,58 +294,61 @@
 		<div class="grow space-y-6">
 			<div>
 				<div class="mb-2 block text-sm font-medium text-gray-700">Section Type</div>
-				<Dropdown class="w-full">
-					{#snippet trigger({ isOpen })}
-						{sectionTypeLabel()}
-						{#if hasSelection}
-							<span
-								onclick={clearSectionTypeFilter}
-								onkeydown={(e) => {
-									if (e.key === 'Enter' || e.key === ' ') {
-										e.preventDefault();
-										clearSectionTypeFilter(e);
-									}
-								}}
-								class="cursor-pointer rounded-full bg-white p-0.5 text-primary"
-								aria-label="Clear filter"
-								role="button"
-								tabindex="0"
-							>
-								<XIcon class="h-3 w-3" />
-							</span>
-						{:else}
-							<ChevronDownIcon
-								class="h-4 w-4 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}"
+				<div class="space-y-2">
+					{#each data.sectionTypes as option (option.value)}
+						<label
+							class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-gray-50"
+						>
+							<input
+								type="checkbox"
+								bind:group={$sectionTypeParam}
+								value={option.value}
+								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary/20"
 							/>
-						{/if}
-					{/snippet}
-					{#snippet content()}
-						<div class="flex flex-col gap-1 px-2 py-1">
-							{#each data.sectionTypes as option (option.value)}
-								<label
-									class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-gray-100"
-								>
-									<input
-										type="checkbox"
-										bind:group={$sectionTypeParam}
-										value={option.value}
-										class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary/20"
-									/>
-									<span class="text-gray-700">{option.label}</span>
-								</label>
-							{/each}
-						</div>
-					{/snippet}
-				</Dropdown>
+							<span class="text-gray-700">{option.label}</span>
+						</label>
+					{/each}
+				</div>
 			</div>
 
 			<div>
-				<div class="mb-2 block text-sm font-medium text-gray-700">Matchdays</div>
-				<MatchdaySelector
-					allMatchdays={data.upcomingMatches}
-					selectedIds={selectedMatchdayIds}
-					onSelectionChange={handleMatchdaySelectionChange}
-				/>
+				<div class="mb-2 flex items-center justify-between text-sm font-medium text-gray-700">
+					<span>Matchdays</span>
+					<span class="text-xs text-gray-500">
+						{selectedMatchdayIds.length} of {data.upcomingMatches.length} selected (min 1, max 10)
+					</span>
+				</div>
+				<div class="max-h-96 space-y-2 overflow-y-auto">
+					{#each data.upcomingMatches as matchday (matchday.id)}
+						{@const isSelected = selectedMatchdayIds.includes(matchday.id)}
+						{@const isMaxReached = !isSelected && selectedMatchdayIds.length >= 10}
+						{@const isLastSelected = isSelected && selectedMatchdayIds.length === 1}
+						{@const isDisabled = isMaxReached || isLastSelected}
+						<label
+							class="flex cursor-pointer items-start gap-3 rounded px-2 py-1.5 transition-colors {isDisabled
+								? 'cursor-not-allowed opacity-50'
+								: ''}"
+							title={isLastSelected ? 'At least 1 matchday must be selected' : ''}
+						>
+							<input
+								type="checkbox"
+								checked={isSelected}
+								disabled={isDisabled}
+								onchange={(e) => handleMatchdayCheckboxChange(matchday.id, e.currentTarget.checked)}
+								class="mt-0.5 h-4 w-4 rounded accent-primary/10 checked:border checked:border-primary disabled:cursor-not-allowed"
+							/>
+							<div class="flex-1">
+								<div class="flex items-baseline justify-between gap-2">
+									<span class="text-sm font-medium text-gray-900">{matchday.opponent}</span>
+									<span class="text-xs text-gray-500">{formatDate(matchday.date)}</span>
+								</div>
+								{#if matchday.competition}
+									<span class="text-xs text-gray-500">{matchday.competition}</span>
+								{/if}
+							</div>
+						</label>
+					{/each}
+				</div>
 			</div>
 		</div>
 
