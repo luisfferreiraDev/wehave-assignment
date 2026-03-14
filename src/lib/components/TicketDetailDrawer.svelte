@@ -2,6 +2,7 @@
 	import Drawer from './Drawer.svelte';
 	import SectionTypeChip from './SectionTypeChip.svelte';
 	import type { StadiumSection, Sponsor, Matchday, TicketAllocation } from '$lib/types/tickets';
+	import { formatDateWithYear, formatTime } from '$lib/utils/date';
 
 	interface Props {
 		open: boolean;
@@ -45,21 +46,6 @@
 			isLoading = false;
 		}
 	});
-
-	const formatDate = (date: Date) => {
-		return new Intl.DateTimeFormat('en-GB', {
-			day: '2-digit',
-			month: 'short',
-			year: 'numeric'
-		}).format(date);
-	};
-
-	const formatTime = (date: Date) => {
-		return new Intl.DateTimeFormat('en-GB', {
-			hour: '2-digit',
-			minute: '2-digit'
-		}).format(date);
-	};
 
 	const matchdayUsagePercent = $derived(
 		section && allocation
@@ -171,7 +157,7 @@
 			<div class="rounded-lg bg-gray-50 p-4">
 				<div class="mb-1 text-lg font-semibold text-gray-900">{matchday.opponent}</div>
 				<div class="text-sm text-gray-600">
-					{formatDate(matchday.date)} • {formatTime(matchday.date)}
+					{formatDateWithYear(matchday.date)} • {formatTime(matchday.date)}
 				</div>
 				{#if matchday.competition}
 					<div class="mt-1 text-sm text-gray-500">{matchday.competition}</div>

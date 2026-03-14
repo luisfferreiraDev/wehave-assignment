@@ -4,6 +4,7 @@
 	import Accordion from '$lib/components/Accordion.svelte';
 	import AnimatedNumber from './AnimatedNumber.svelte';
 	import SectionTypeChip from './SectionTypeChip.svelte';
+	import { formatShortDate } from '$lib/utils/date';
 
 	interface Props {
 		sectionOverview: SectionTicketOverview;
@@ -25,13 +26,6 @@
 			return () => clearTimeout(timer);
 		}
 	});
-
-	const formatDate = (date: Date) => {
-		return new Intl.DateTimeFormat('en-GB', {
-			day: '2-digit',
-			month: 'short'
-		}).format(date);
-	};
 
 	const getTicketCountForMatchday = (
 		sponsorSummary: SectionTicketOverview['sponsors'][0],
@@ -87,21 +81,25 @@
 		</div>
 	{/snippet}
 
-	<div class="overflow-x-auto pb-8 pl-8">
-		<table class="w-full border-collapse overflow-hidden rounded-lg">
+	<div class="overflow-x-auto bg-white pb-8 md:ml-8">
+		<table class="w-full min-w-max border-separate border-spacing-0 rounded-lg">
 			<thead>
 				<tr class="border-b border-medium-gray">
-					<th class="p-3 text-left font-semibold text-dark-gray">Sponsor</th>
-					<th class="p-3 text-right font-semibold text-dark-gray">
+					<th
+						class="sticky left-0 w-40 max-w-40 min-w-40 border-b border-medium-gray bg-white p-3 text-left font-semibold text-dark-gray shadow-[2px_0_0_0_rgba(0,0,0,0.08)] md:w-auto md:max-w-none md:shadow-none"
+					>
+						Sponsor
+					</th>
+					<th class="border-b border-medium-gray p-3 text-right font-semibold text-dark-gray">
 						<div class="min-w-48">
 							<div>Season Total</div>
 							<div class="text-xs font-normal text-gray-500">Capacity Usage</div>
 						</div>
 					</th>
 					{#each upcomingMatches as match (match.id)}
-						<th class="p-3 text-right font-semibold text-dark-gray">
+						<th class="border-b border-medium-gray p-3 text-right font-semibold text-dark-gray">
 							<div class="flex flex-col items-end">
-								<span class="text-xs text-gray-500">{formatDate(match.date)}</span>
+								<span class="text-xs text-gray-500">{formatShortDate(match.date)}</span>
 								<span class="max-w-30 truncate text-xs" title={match.opponent}>
 									{match.opponent}
 								</span>
@@ -112,11 +110,16 @@
 			</thead>
 			<tbody>
 				{#each sortedSponsors as sponsorSummary (sponsorSummary.sponsor.id)}
-					<tr class="border-b border-medium-gray transition-colors hover:bg-gray-50">
-						<td class="p-3 font-medium text-gray-900">
-							{sponsorSummary.sponsor.name}
+					<tr class="group transition-colors hover:bg-gray-50">
+						<td
+							class="sticky left-0 w-40 max-w-40 min-w-40 border-b border-medium-gray bg-white p-3 font-medium text-gray-900 shadow-[2px_0_0_0_rgba(0,0,0,0.08)] group-hover:bg-gray-50 md:w-auto md:max-w-none md:shadow-none
+"
+						>
+							<div class="truncate" title={sponsorSummary.sponsor.name}>
+								{sponsorSummary.sponsor.name}
+							</div>
 						</td>
-						<td class="p-3">
+						<td class="border-b border-medium-gray p-3">
 							<div class="flex items-center justify-end gap-3">
 								<div class="flex min-w-32 flex-col items-end gap-1">
 									<AnimatedNumber value={sponsorSummary.totalSeasonTickets} />
@@ -134,7 +137,7 @@
 						</td>
 						{#each upcomingMatches as match (match.id)}
 							{@const ticketCount = getTicketCountForMatchday(sponsorSummary, match.id)}
-							<td class="p-3">
+							<td class="border-b border-medium-gray p-3">
 								<div class="flex items-center justify-end">
 									{#if ticketCount > 0}
 										<button

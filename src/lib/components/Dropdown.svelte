@@ -91,7 +91,7 @@
 	<button
 		type="button"
 		onclick={toggle}
-		class="flex h-10 cursor-pointer items-center justify-between gap-2 rounded-md border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs"
+		class="flex h-10 cursor-pointer items-center justify-between gap-2 rounded-lg border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs"
 		aria-haspopup="listbox"
 		aria-expanded={isOpen}
 		aria-label="Dropdown menu"

@@ -2,6 +2,7 @@
 	import type { Matchday } from '$lib/types/tickets';
 	import Dropdown from './Dropdown.svelte';
 	import ChevronDownIcon from './icons/ChevronDownIcon.svelte';
+	import { formatShortDate } from '$lib/utils/date';
 
 	interface Props {
 		allMatchdays: Matchday[];
@@ -20,13 +21,6 @@
 			}
 		}
 	}
-
-	const formatDate = (date: Date) => {
-		return new Intl.DateTimeFormat('en-GB', {
-			day: '2-digit',
-			month: 'short'
-		}).format(date);
-	};
 </script>
 
 <Dropdown class="inline-block" contentClass="min-w-72">
@@ -59,7 +53,7 @@
 					<div class="flex-1">
 						<div class="flex items-baseline justify-between gap-2">
 							<span class="text-sm font-medium text-gray-900">{matchday.opponent}</span>
-							<span class="text-xs text-gray-500">{formatDate(matchday.date)}</span>
+							<span class="text-xs text-gray-500">{formatShortDate(matchday.date)}</span>
 						</div>
 						{#if matchday.competition}
 							<span class="text-xs text-gray-500">{matchday.competition}</span>

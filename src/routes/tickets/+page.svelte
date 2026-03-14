@@ -22,6 +22,7 @@
 	import SearchIcon from '$lib/components/icons/SearchIcon.svelte';
 	import { slide } from 'svelte/transition';
 	import { SEARCH_PLACEHOLDER, SORT_OPTIONS } from '$lib/data/ticketsPageConstants';
+	import { formatShortDate } from '$lib/utils/date';
 
 	let { data }: { data: PageData } = $props();
 
@@ -117,13 +118,6 @@
 		}
 	}
 
-	const formatDate = (date: Date) => {
-		return new Intl.DateTimeFormat('en-GB', {
-			day: '2-digit',
-			month: 'short'
-		}).format(date);
-	};
-
 	$effect(() => {
 		if (
 			$matchdayIdsParam &&
@@ -201,7 +195,7 @@
 			<h1 class="text-lg font-bold">Stadium Sections</h1>
 		</div>
 	{/snippet}
-	<div class=" flex flex-col items-start gap-4 pt-4 md:p-6">
+	<div class=" flex flex-col items-start gap-4 pt-4 pb-12 md:p-6">
 		<div
 			class="sticky top-11.25 z-10 -mx-px w-full border-b border-medium-gray px-1 md:relative md:top-0 md:border-0"
 		>
@@ -213,7 +207,7 @@
 				<div class="flex w-full justify-end gap-2">
 					<div class="z-10 hidden md:block">
 						<div
-							class="relative overflow-hidden transition-[width] duration-300 ease-out {isSearchOpen
+							class="relative overflow-hidden rounded-lg shadow-xs transition-[width] duration-300 ease-out {isSearchOpen
 								? 'w-full md:w-72'
 								: ' w-24'}"
 						>
@@ -224,14 +218,14 @@
 									bind:value={$searchParam}
 									onblur={handleSearchBlur}
 									placeholder={SEARCH_PLACEHOLDER}
-									class="h-10 w-full rounded-md border border-gray-300 px-3 py-1.5 pr-9 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+									class="h-10 w-full rounded-lg border border-gray-300 px-3 py-1.5 pr-9 text-sm shadow-xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
 								/>
 								<SearchClearButton hasQuery={Boolean($searchParam)} onClick={handleSearchAction} />
 							{:else}
 								<button
 									type="button"
 									onclick={openSearch}
-									class="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs"
+									class="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-medium-gray bg-white px-3 py-1.5 text-black"
 									aria-label="Open search"
 								>
 									<SearchIcon size={16} />
@@ -243,14 +237,14 @@
 					<button
 						type="button"
 						onclick={toggleMobileSearch}
-						class=" flex h-10 cursor-pointer items-center justify-between gap-2 rounded-md border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs md:hidden"
+						class=" flex h-10 cursor-pointer items-center justify-between gap-2 rounded-lg border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs md:hidden"
 					>
 						<SearchIcon class="h-4 w-4" />
 					</button>
 					<button
 						type="button"
 						onclick={openFilterDrawer}
-						class="flex h-10 cursor-pointer items-center justify-between gap-2 rounded-md border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs"
+						class="flex h-10 cursor-pointer items-center justify-between gap-2 rounded-lg border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs"
 					>
 						<FilterIcon class="h-4 w-4" />
 						<span class="hidden md:block"> Filters </span>
@@ -332,7 +326,7 @@
 		</div>
 
 		{#if data.sectionOverviews.length > 0}
-			<div class="w-full px-4 py-3">
+			<div class="flex w-full flex-col gap-8 px-4 py-3">
 				{#each data.sectionOverviews as sectionOverview (sectionOverview.section.id)}
 					<SectionAccordion
 						{sectionOverview}
@@ -377,7 +371,7 @@
 								type="checkbox"
 								bind:group={$sectionTypeParam}
 								value={option.value}
-								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary/20"
+								class="h-4 w-4 rounded accent-primary/10 checked:border checked:border-primary"
 							/>
 							<span class="text-gray-700">{option.label}</span>
 						</label>
@@ -414,7 +408,7 @@
 							<div class="flex-1">
 								<div class="flex items-baseline justify-between gap-2">
 									<span class="text-sm font-medium text-gray-900">{matchday.opponent}</span>
-									<span class="text-xs text-gray-500">{formatDate(matchday.date)}</span>
+									<span class="text-xs text-gray-500">{formatShortDate(matchday.date)}</span>
 								</div>
 								{#if matchday.competition}
 									<span class="text-xs text-gray-500">{matchday.competition}</span>
@@ -430,7 +424,7 @@
 			<button
 				type="button"
 				onclick={clearAllFilters}
-				class="text-sm text-gray-600 underline transition-colors hover:text-gray-900"
+				class="cursor-pointer text-sm text-gray-600 underline transition-colors hover:text-gray-900"
 			>
 				Clear all
 			</button>
