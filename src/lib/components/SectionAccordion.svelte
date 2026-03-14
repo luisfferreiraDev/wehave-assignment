@@ -74,12 +74,16 @@
 
 <Accordion bind:open={isOpen}>
 	{#snippet header()}
-		<div class="flex items-center gap-3">
+		<div class="flex flex-col gap-3 md:flex-row md:items-center">
 			<h3 class="font-semibold">{sectionOverview.section.name}</h3>
-			<SectionTypeChip type={sectionOverview.section.type} size="sm" />
-			<span class=" text-gray-500">
-				{sectionOverview.sponsors.length} sponsor{sectionOverview.sponsors.length !== 1 ? 's' : ''}
-			</span>
+			<div class="flex items-center gap-3">
+				<SectionTypeChip type={sectionOverview.section.type} size="sm" />
+				<span class=" text-gray-500">
+					{sectionOverview.sponsors.length} sponsor{sectionOverview.sponsors.length !== 1
+						? 's'
+						: ''}
+				</span>
+			</div>
 		</div>
 	{/snippet}
 
