@@ -91,6 +91,7 @@
 	const matchdayIdsParam = queryParam('matchdayIds', ssp.array(), {
 		pushHistory: false
 	});
+	const INITIAL_VISIBLE_MATCHDAYS = 5;
 
 	const defaultMatchdayIds = $derived(data.upcomingMatches.slice(0, 5).map((m) => m.id));
 	const selectedMatchdayIds = $derived(
@@ -138,6 +139,7 @@
 	});
 
 	function openFilterDrawer() {
+		visibleMatchdayCount = INITIAL_VISIBLE_MATCHDAYS;
 		filterDrawerOpen = true;
 	}
 
@@ -178,6 +180,26 @@
 
 	let mobileSearchOpen = $state(false);
 	let mobileSearchInputEl = $state<HTMLInputElement | null>(null);
+	let visibleMatchdayCount = $state(INITIAL_VISIBLE_MATCHDAYS);
+
+	const visibleFilterMatchdays = $derived(
+		data.upcomingMatches.filter(
+			(matchday, index) => index < visibleMatchdayCount || selectedMatchdayIds.includes(matchday.id)
+		)
+	);
+	const hasMoreMatchdays = $derived(
+		data.upcomingMatches.some(
+			(matchday, index) =>
+				index >= visibleMatchdayCount && !selectedMatchdayIds.includes(matchday.id)
+		)
+	);
+
+	function loadMoreMatchdays() {
+		visibleMatchdayCount = Math.min(
+			visibleMatchdayCount + INITIAL_VISIBLE_MATCHDAYS,
+			data.upcomingMatches.length
+		);
+	}
 
 	async function toggleMobileSearch() {
 		mobileSearchOpen = !mobileSearchOpen;
@@ -256,12 +278,20 @@
 							</span>
 						{/if}
 					</button>
-					<Dropdown contentClass="min-w-50">
+					<Dropdown
+						contentClass="min-w-50"
+						triggerStyle={$sortParam
+							? 'border border-primary bg-primary/10 text-primary'
+							: 'border border-medium-gray bg-white text-black'}
+					>
 						{#snippet trigger()}
 							{#if $sortParam}
-								{$sortParam
-									? SORT_OPTIONS.find((opt) => opt.value === $sortParam)?.label || 'Sort'
-									: 'Sort'}
+								<ArrowDownUp class="h-4 w-4 transition-transform duration-200" />
+								<span class="hidden md:block">
+									{$sortParam
+										? SORT_OPTIONS.find((opt) => opt.value === $sortParam)?.label || 'Sort'
+										: 'Sort'}
+								</span>
 								<span
 									onclick={clearSort}
 									onkeydown={(e) => {
@@ -357,9 +387,9 @@
 	{seasonTotal}
 />
 
-<Drawer bind:open={filterDrawerOpen} title="Filters" onClose={closeFilterDrawer}>
-	<div class="flex h-full flex-col">
-		<div class="grow space-y-6">
+<Drawer bind:open={filterDrawerOpen} title="Filters" onClose={closeFilterDrawer} scrollable={false}>
+	<div class="flex h-full min-h-0 flex-col">
+		<div class="min-h-0 grow space-y-6 overflow-y-auto pr-1">
 			<div>
 				<div class="mb-2 block text-sm font-medium text-gray-700">Section Type</div>
 				<div class="space-y-2">
@@ -386,8 +416,8 @@
 						{selectedMatchdayIds.length} of {data.upcomingMatches.length} selected (min 1, max 10)
 					</span>
 				</div>
-				<div class="max-h-96 space-y-2 overflow-y-auto">
-					{#each data.upcomingMatches as matchday (matchday.id)}
+				<div class="space-y-2">
+					{#each visibleFilterMatchdays as matchday (matchday.id)}
 						{@const isSelected = selectedMatchdayIds.includes(matchday.id)}
 						{@const isMaxReached = !isSelected && selectedMatchdayIds.length >= 10}
 						{@const isLastSelected = isSelected && selectedMatchdayIds.length === 1}
@@ -417,10 +447,19 @@
 						</label>
 					{/each}
 				</div>
+				{#if hasMoreMatchdays}
+					<button
+						type="button"
+						onclick={loadMoreMatchdays}
+						class="mt-3 cursor-pointer text-sm font-medium text-primary transition-colors hover:text-primary/80"
+					>
+						Load more matchdays
+					</button>
+				{/if}
 			</div>
 		</div>
 
-		<div class="flex items-center justify-between border-t border-gray-200 pt-4">
+		<div class="flex items-center justify-between border-t border-gray-200 bg-white pt-4">
 			<button
 				type="button"
 				onclick={clearAllFilters}

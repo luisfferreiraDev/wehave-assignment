@@ -9,9 +9,17 @@
 		title?: string;
 		children: Snippet;
 		class?: string;
+		scrollable?: boolean;
 	}
 
-	let { open = $bindable(), onClose, title, children, class: className }: Props = $props();
+	let {
+		open = $bindable(),
+		onClose,
+		title,
+		children,
+		class: className,
+		scrollable = true
+	}: Props = $props();
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape' && open) {
@@ -75,7 +83,7 @@
 					<XIcon class="h-5 w-5" />
 				</button>
 			</div>
-			<div class="flex-1 overflow-y-auto p-6 {className}">
+			<div class="flex-1 p-6 {scrollable ? 'overflow-y-auto' : 'overflow-hidden'} {className}">
 				{@render children()}
 			</div>
 		</div>
