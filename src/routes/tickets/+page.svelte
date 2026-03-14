@@ -118,6 +118,15 @@
 		}
 	});
 
+	let previousSeason = $state($seasonParam);
+	$effect(() => {
+		if (previousSeason !== undefined && previousSeason !== $seasonParam) {
+			$sectionTypeParam = null;
+			$matchdayIdsParam = null;
+		}
+		previousSeason = $seasonParam;
+	});
+
 	let filterDrawerOpen = $state(false);
 
 	const activeFilterCount = $derived.by(() => {
