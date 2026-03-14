@@ -6,6 +6,7 @@
 	import TicketDetailDrawer from '$lib/components/TicketDetailDrawer.svelte';
 	import FilterIcon from '$lib/components/icons/FilterIcon.svelte';
 	import Drawer from '$lib/components/Drawer.svelte';
+	import { tick } from 'svelte';
 	import type { PageData } from './$types';
 	import { queryParam, ssp } from 'sveltekit-search-params/sveltekit-search-params';
 	import SeasonDropdown from '$lib/components/SeasonDropdown.svelte';
@@ -17,6 +18,8 @@
 	} from '$lib/data/mockTickets';
 	import type { StadiumSection, Sponsor, Matchday, TicketAllocation } from '$lib/types/tickets';
 	import ArrowDownUp from '$lib/components/icons/ArrowDownUp.svelte';
+	import SearchIcon from '$lib/components/icons/SearchIcon.svelte';
+	import { slide } from 'svelte/transition';
 
 	let { data }: { data: PageData } = $props();
 
@@ -34,13 +37,55 @@
 		pushHistory: false
 	});
 
+	let isSearchOpen = $state(false);
+	let searchInputEl = $state<HTMLInputElement | null>(null);
+	let isSearchFocused = $state(false);
+
 	function clearSearch() {
 		$searchParam = null;
+	}
+
+	async function openSearch() {
+		isSearchOpen = true;
+		await tick();
+		searchInputEl?.focus();
+	}
+
+	function closeSearch() {
+		isSearchOpen = false;
+	}
+
+	function handleSearchAction() {
+		if ($searchParam) {
+			clearSearch();
+			return;
+		}
+		closeSearch();
+	}
+
+	function handleSearchFocus() {
+		isSearchFocused = true;
+	}
+
+	function handleSearchBlur() {
+		isSearchFocused = false;
 	}
 
 	$effect(() => {
 		if (Array.isArray($sectionTypeParam) && $sectionTypeParam.length === 0) {
 			$sectionTypeParam = null;
+		}
+	});
+
+	$effect(() => {
+		if ($searchParam && !isSearchOpen) {
+			isSearchOpen = true;
+		}
+	});
+
+	$effect(() => {
+		if (!isSearchFocused && (!$searchParam || $searchParam === '')) {
+			isSearchOpen = false;
 		}
 	});
 
@@ -157,6 +202,18 @@
 	function closeDrawer() {
 		drawerOpen = false;
 	}
+
+	let mobileSearchOpen = $state(false);
+	let mobileSearchInputEl = $state<HTMLInputElement | null>(null);
+
+	async function toggleMobileSearch() {
+		mobileSearchOpen = !mobileSearchOpen;
+
+		if (mobileSearchOpen) {
+			await tick();
+			mobileSearchInputEl?.focus();
+		}
+	}
 </script>
 
 <Container>
@@ -165,25 +222,74 @@
 			<h1 class="text-lg font-bold">Stadium Sections</h1>
 		</div>
 	{/snippet}
-	<div class="space-y-4 p-6">
-		<div class="flex flex-col items-center justify-between gap-4">
-			<SeasonDropdown
-				bind:value={$seasonParam}
-				onChange={() => {
-					$sectionTypeParam = null;
-					$matchdayIdsParam = null;
-				}}
-				options={data.seasons}
-			/>
-			<div class="flex w-full gap-2">
-				<div class="flex w-full items-center justify-end gap-2">
+	<div class=" flex flex-col items-start gap-4 pt-4 md:p-6">
+		<div
+			class="sticky top-11.25 z-10 -mx-px w-full border-b border-medium-gray px-1 md:relative md:top-0 md:border-0"
+		>
+			<div
+				class="relative flex items-center justify-center gap-4 bg-white px-3 py-2 md:justify-between"
+			>
+				<SeasonDropdown
+					bind:value={$seasonParam}
+					onChange={() => {
+						$sectionTypeParam = null;
+						$matchdayIdsParam = null;
+					}}
+					options={data.seasons}
+				/>
+
+				<div class="flex w-full justify-end gap-2">
+					<div class="z-10 hidden md:block">
+						<div
+							class="relative overflow-hidden transition-[width] duration-300 ease-out {isSearchOpen
+								? 'w-full md:w-72'
+								: ' w-24'}"
+						>
+							{#if isSearchOpen}
+								<input
+									type="text"
+									bind:this={searchInputEl}
+									bind:value={$searchParam}
+									onfocus={handleSearchFocus}
+									onblur={handleSearchBlur}
+									placeholder="Search sponsors or sections"
+									class="h-10 w-full rounded-md border border-gray-300 px-3 py-1.5 pr-9 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+								/>
+								<button
+									type="button"
+									onclick={handleSearchAction}
+									class="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-gray-400 transition-colors hover:text-gray-600"
+									aria-label={$searchParam ? 'Clear search' : 'Close search'}
+								>
+									<XIcon class="h-4 w-4" />
+								</button>
+							{:else}
+								<button
+									type="button"
+									onclick={openSearch}
+									class="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs"
+									aria-label="Open search"
+								>
+									<SearchIcon size={16} />
+									Search
+								</button>
+							{/if}
+						</div>
+					</div>
+					<button
+						type="button"
+						onclick={toggleMobileSearch}
+						class=" flex h-10 cursor-pointer items-center justify-between gap-2 rounded-md border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs md:hidden"
+					>
+						<SearchIcon class="h-4 w-4" />
+					</button>
 					<button
 						type="button"
 						onclick={openFilterDrawer}
-						class="flex cursor-pointer items-center justify-between gap-2 rounded-md border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs"
+						class="flex h-10 cursor-pointer items-center justify-between gap-2 rounded-md border border-medium-gray bg-white px-3 py-1.5 text-black shadow-xs"
 					>
 						<FilterIcon class="h-4 w-4" />
-						Filters
+						<span class="hidden md:block"> Filters </span>
 						{#if activeFilterCount > 0}
 							<span
 								class="flex h-5 w-5 items-center justify-center rounded-full border border-primary bg-primary/10 text-xs text-primary"
@@ -215,9 +321,7 @@
 								</span>
 							{:else}
 								<ArrowDownUp class="h-4 w-4 transition-transform duration-200" />
-								{$sortParam
-									? sortOptions.find((opt) => opt.value === $sortParam)?.label || 'Sort'
-									: 'Sort'}
+								<span class="hidden md:block">Sort</span>
 							{/if}
 						{/snippet}
 						{#snippet content({ close })}
@@ -241,37 +345,50 @@
 						{/snippet}
 					</Dropdown>
 				</div>
-				<div class="relative w-64 transition-all duration-200">
-					<input
-						type="text"
-						bind:value={$searchParam}
-						placeholder="Search sponsors or sections"
-						class="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
-					/>
-					{#if $searchParam}
-						<button
-							type="button"
-							onclick={clearSearch}
-							class="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-gray-400 transition-colors hover:text-gray-600"
-							aria-label="Clear search"
-						>
-							<XIcon class="h-4 w-4" />
-						</button>
-					{/if}
-				</div>
 			</div>
+			{#if mobileSearchOpen}
+				<div
+					transition:slide
+					class=" flex h-16 items-center bg-white px-4 inset-shadow-sm md:hidden"
+				>
+					<div class="relative w-full">
+						<input
+							type="text"
+							bind:this={mobileSearchInputEl}
+							bind:value={$searchParam}
+							placeholder="Search sponsors or sections"
+							class="h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 pr-9 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+						/>
+						{#if $searchParam}
+							<button
+								type="button"
+								onclick={handleSearchAction}
+								class="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-gray-400 transition-colors hover:text-gray-600"
+								aria-label={$searchParam ? 'Clear search' : 'Close search'}
+							>
+								<XIcon class="h-4 w-4" />
+							</button>
+						{/if}
+					</div>
+				</div>
+			{/if}
 		</div>
-		{#each data.sectionOverviews as sectionOverview (sectionOverview.section.id)}
-			<SectionAccordion
-				{sectionOverview}
-				upcomingMatches={displayedMatchdays}
-				sortBy={$sortParam}
-				onTicketClick={handleTicketClick}
-			/>
-		{/each}
+
+		{#if data.sectionOverviews.length > 0}
+			<div class="w-full px-4 py-3">
+				{#each data.sectionOverviews as sectionOverview (sectionOverview.section.id)}
+					<SectionAccordion
+						{sectionOverview}
+						upcomingMatches={displayedMatchdays}
+						sortBy={$sortParam}
+						onTicketClick={handleTicketClick}
+					/>
+				{/each}
+			</div>
+		{/if}
 
 		{#if data.sectionOverviews.length === 0}
-			<div class="flex flex-col items-center justify-center py-16 text-center">
+			<div class="flex w-full flex-col items-center justify-center py-16 text-center">
 				<p class="mb-2 text-lg font-medium text-gray-700">No results found</p>
 				<p class="text-sm text-gray-500">Try searching by sponsor or section</p>
 			</div>
