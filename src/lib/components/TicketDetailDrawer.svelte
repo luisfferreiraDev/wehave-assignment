@@ -247,7 +247,7 @@
 				{usagePercentage}% ({total})
 			</span>
 		</div>
-		<div class="h-2 w-full overflow-hidden rounded-full bg-light-primary">
+		<div class="h-2 w-full overflow-hidden rounded-full bg-primary/10">
 			<div
 				class="h-full bg-primary transition-all duration-700 ease-out"
 				style="width: {shouldAnimate ? Math.min(usagePercentage, 100) : 0}%"

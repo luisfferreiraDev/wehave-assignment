@@ -120,7 +120,7 @@
 							<div class="flex items-center justify-end gap-3">
 								<div class="flex min-w-32 flex-col items-end gap-1">
 									<AnimatedNumber value={sponsorSummary.totalSeasonTickets} />
-									<div class="h-1.5 w-full overflow-hidden rounded-full bg-light-primary">
+									<div class="h-1.5 w-full overflow-hidden rounded-full bg-primary/10">
 										<div
 											class="h-full bg-primary transition-all duration-700 ease-out"
 											style="width: {shouldAnimate ? calculateUsagePercentage(sponsorSummary) : 0}%"
